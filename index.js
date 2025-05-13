@@ -72,6 +72,42 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+app.post('/api/goals', async (req, res) => {
+    const { userId, goalId, goal } = req.body;
+
+    if (!userId) {
+        return res.status(400).json({ error: 'Falta userId' });
+    }
+
+    if (!goalId || typeof goalId !== 'string' || goalId.trim() === '') {
+        return res.status(400).json({ error: 'goalId inválido o vacío' });
+    }
+
+    if (goal === undefined) {
+        return res.status(400).json({ error: 'Falta goal' });
+    }
+
+    if (typeof goal !== 'number') {
+        return res.status(400).json({ error: 'goal debe ser un número' });
+    }
+
+    if (goal <= 0) {
+        return res.status(400).json({ error: 'goal debe ser mayor a 0' });
+    }
+
+    try {
+        const result = await pool.query(
+            'INSERT INTO user_goals (user_id, goal_id, goal_value) VALUES ($1, $2, $3) RETURNING *',
+            [userId, goalId, goal]
+        );
+
+        res.status(201).json({ message: 'Objetivo guardado', goal: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al guardar objetivo en la base de datos' });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
