@@ -97,10 +97,16 @@ app.post('/api/goals', async (req, res) => {
 
     try {
         const result = await pool.query(
-            'INSERT INTO user_goals (user_id, goal_id, goal_value) VALUES ($1, $2, $3) RETURNING *',
+            `
+              INSERT INTO user_goals (user_id, goal_id, goal_value)
+              VALUES ($1, $2, $3)
+              ON CONFLICT (user_id, goal_id)
+              DO UPDATE SET goal_value = EXCLUDED.goal_value
+              RETURNING *;
+            `,
             [userId, goalId, goal]
         );
-
+      
         res.status(201).json({ message: 'Objetivo guardado', goal: result.rows[0] });
     } catch (err) {
         console.error(err);
