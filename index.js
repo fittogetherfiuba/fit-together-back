@@ -72,6 +72,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Establecer objetivos
 app.post('/api/goals', async (req, res) => {
     const { userId, goalId, goal } = req.body;
 
@@ -113,6 +114,197 @@ app.post('/api/goals', async (req, res) => {
         res.status(500).json({ error: 'Error al guardar objetivo en la base de datos' });
     }
 });
+
+// Agregar comida consumida
+app.post('/api/foods/entry', async (req, res) => {
+    const { userId, foodName, quantity, consumedAt } = req.body;
+
+    if (!userId) return res.status(400).json({ error: 'Falta userId' });
+    if (!foodName || typeof foodName !== 'string') {
+        return res.status(400).json({ error: 'foodName inválido o vacío' });
+    }
+    if (typeof quantity !== 'number' || quantity <= 0) {
+        return res.status(400).json({ error: 'quantity debe ser un número mayor a 0' });
+    }
+
+    try {
+        const foodResult = await pool.query(
+            'SELECT id FROM foods WHERE LOWER(name) = LOWER($1) LIMIT 1',
+            [foodName.trim()]
+        );
+
+        if (foodResult.rows.length === 0) {
+            return res.status(404).json({ error: 'El alimento no existe' });
+        }
+
+        const foodId = foodResult.rows[0].id;
+
+        const insertResult = await pool.query(
+            `INSERT INTO user_food_entries (user_id, food_id, quantity, consumed_at)
+             VALUES ($1, $2, $3, $4)
+             RETURNING *`,
+            [userId, foodId, quantity, consumedAt || new Date()]
+        );
+
+        res.status(201).json({ message: 'Comida registrada', entry: insertResult.rows[0] });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al registrar la comida' });
+    }
+});
+
+// Agregar comida
+app.post('/api/foods', async (req, res) => {
+    const { name, userId } = req.body;
+
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+        return res.status(400).json({ error: 'name inválido o vacío' });
+    }
+
+    const normalizedName = name.trim().toLowerCase();
+
+    try {
+        // Verificar si ya existe
+        const existing = await pool.query(
+            'SELECT * FROM foods WHERE LOWER(name) = $1 LIMIT 1',
+            [normalizedName]
+        );
+
+        if (existing.rows.length > 0) {
+            return res.status(409).json({ error: 'El alimento ya existe' });
+        }
+
+        // Insertar si no existe
+        const result = await pool.query(
+            `INSERT INTO foods (name, created_by_user_id)
+             VALUES ($1, $2)
+             RETURNING *`,
+            [name.trim(), userId || null]
+        );
+
+        res.status(201).json({ message: 'Alimento creado', food: result.rows[0] });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al crear alimento' });
+    }
+});
+
+// Ver comidas consumidas por un usuario
+app.get('/api/foods/entry/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    if (!userId) {
+        return res.status(400).json({ error: 'Falta userId' });
+    }
+
+    try {
+        const result = await pool.query(
+            `SELECT ufe.id, ufe.quantity, ufe.consumed_at, f.name AS food_name
+             FROM user_food_entries ufe
+             JOIN foods f ON ufe.food_id = f.id
+             WHERE ufe.user_id = $1
+             ORDER BY ufe.consumed_at DESC`,
+            [userId]
+        );
+        res.json({ entries: result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener comidas del usuario' });
+    }
+});
+
+// Ver comidas disponibles
+app.get('/api/foods', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT * FROM foods ORDER BY name ASC`
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener alimentos' });
+    }
+});
+
+// Ver actividades realizadas por un usuario
+app.get('/api/activities/entry/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT uae.*, a.name AS activity_name
+             FROM user_activity_entries uae
+             JOIN activities a ON uae.activity_id = a.id
+             WHERE uae.user_id = $1
+             ORDER BY uae.performed_at DESC`,
+            [userId]
+        );
+        res.json({ entries: result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener actividades del usuario' });
+    }
+});
+
+// Registrar actividad realizada por un usuario
+app.post('/api/activities/entry', async (req, res) => {
+    const { userId, activityName, durationMinutes, distanceKm, series, repetitions, performedAt } = req.body;
+
+    if (!userId || !activityName) {
+        return res.status(400).json({ error: 'Faltan campos obligatorios: userId y activityName' });
+    }
+
+    try {
+        // Buscar ID de la actividad
+        const activityRes = await pool.query(
+            'SELECT id FROM activities WHERE LOWER(name) = LOWER($1) LIMIT 1',
+            [activityName.trim()]
+        );
+
+        if (activityRes.rows.length === 0) {
+            return res.status(404).json({ error: 'La actividad no existe' });
+        }
+
+        const activityId = activityRes.rows[0].id;
+
+        const insertRes = await pool.query(
+            `INSERT INTO user_activity_entries 
+            (user_id, activity_id, duration_minutes, distance_km, series, repetitions, performed_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             RETURNING *`,
+            [
+                userId,
+                activityId,
+                durationMinutes || null,
+                distanceKm || null,
+                series || null,
+                repetitions || null,
+                performedAt || new Date()
+            ]
+        );
+
+        res.status(201).json({ message: 'Actividad registrada', entry: insertRes.rows[0] });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al registrar actividad' });
+    }
+});
+
+
+// Ver actividades disponibels
+app.get('/api/activities', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM activities ORDER BY name ASC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener actividades' });
+    }
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
