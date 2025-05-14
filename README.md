@@ -43,8 +43,5 @@ curl --location --request POST 'http://localhost:3000/api/foods' \
 ```bash
 curl --location 'http://localhost:3000/api/foods' \
 --header 'Content-Type: application/json' \
---data '{
-  "name": "Manzana",
-  "userId": 1
-}'
+--data ''
 ```
