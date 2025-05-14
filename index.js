@@ -191,6 +191,18 @@ app.post('/api/foods', async (req, res) => {
     }
 });
 
+// Ver comidas disponibles
+app.get('/api/foods', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT * FROM foods ORDER BY name ASC`
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener alimentos' });
+    }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
