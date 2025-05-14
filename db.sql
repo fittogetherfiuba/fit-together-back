@@ -39,6 +39,25 @@ CREATE TABLE user_food_entries (
     consumed_at DATE NOT NULL DEFAULT CURRENT_DATE
 );
 
+-- Actividades disponibles (como "Correr", "Bicicleta", "Levantamiento de pesas", etc.)
+CREATE TABLE activities (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    created_by_user_id INTEGER REFERENCES users(id)
+);
+
+-- Entradas de actividades realizadas por usuario
+CREATE TABLE user_activity_entries (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    activity_id INTEGER REFERENCES activities(id),
+    duration_minutes INTEGER,
+    distance_km REAL,
+    series INTEGER,
+    repetitions INTEGER,
+    performed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 INSERT INTO foods (name, created_by_user_id) VALUES
 ('Manzana', NULL),
 ('Banana', NULL),
@@ -55,3 +74,15 @@ INSERT INTO foods (name, created_by_user_id) VALUES
 ('Queso', NULL),
 ('Aceite de oliva', NULL),
 ('Avena', NULL);
+
+INSERT INTO activities (name, created_by_user_id) VALUES
+('Caminar', NULL),
+('Correr', NULL),
+('Nadar', NULL),
+('Bicicleta', NULL),
+('Sentadillas', NULL),
+('Flexiones', NULL),
+('Plancha', NULL),
+('Burpees', NULL),
+('Abdominales', NULL),
+('Yoga', NULL);
