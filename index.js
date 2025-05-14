@@ -191,6 +191,30 @@ app.post('/api/foods', async (req, res) => {
     }
 });
 
+// Ver comidas consumidas por un usuario
+app.get('/api/foods/entry/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    if (!userId) {
+        return res.status(400).json({ error: 'Falta userId' });
+    }
+
+    try {
+        const result = await pool.query(
+            `SELECT ufe.id, ufe.quantity, ufe.consumed_at, f.name AS food_name
+             FROM user_food_entries ufe
+             JOIN foods f ON ufe.food_id = f.id
+             WHERE ufe.user_id = $1
+             ORDER BY ufe.consumed_at DESC`,
+            [userId]
+        );
+        res.json({ entries: result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener comidas del usuario' });
+    }
+});
+
 // Ver comidas disponibles
 app.get('/api/foods', async (req, res) => {
     try {
