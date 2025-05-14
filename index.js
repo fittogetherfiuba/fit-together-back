@@ -72,6 +72,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Establecer objetivos
 app.post('/api/goals', async (req, res) => {
     const { userId, goalId, goal } = req.body;
 
@@ -113,6 +114,83 @@ app.post('/api/goals', async (req, res) => {
         res.status(500).json({ error: 'Error al guardar objetivo en la base de datos' });
     }
 });
+
+// Agregar comida consumida
+app.post('/api/foods/entry', async (req, res) => {
+    const { userId, foodName, quantity, consumedAt } = req.body;
+
+    if (!userId) return res.status(400).json({ error: 'Falta userId' });
+    if (!foodName || typeof foodName !== 'string') {
+        return res.status(400).json({ error: 'foodName inválido o vacío' });
+    }
+    if (typeof quantity !== 'number' || quantity <= 0) {
+        return res.status(400).json({ error: 'quantity debe ser un número mayor a 0' });
+    }
+
+    try {
+        const foodResult = await pool.query(
+            'SELECT id FROM foods WHERE LOWER(name) = LOWER($1) LIMIT 1',
+            [foodName.trim()]
+        );
+
+        if (foodResult.rows.length === 0) {
+            return res.status(404).json({ error: 'El alimento no existe' });
+        }
+
+        const foodId = foodResult.rows[0].id;
+
+        const insertResult = await pool.query(
+            `INSERT INTO user_food_entries (user_id, food_id, quantity, consumed_at)
+             VALUES ($1, $2, $3, $4)
+             RETURNING *`,
+            [userId, foodId, quantity, consumedAt || new Date()]
+        );
+
+        res.status(201).json({ message: 'Comida registrada', entry: insertResult.rows[0] });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al registrar la comida' });
+    }
+});
+
+// Agregar comida
+app.post('/api/foods', async (req, res) => {
+    const { name, userId } = req.body;
+
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+        return res.status(400).json({ error: 'name inválido o vacío' });
+    }
+
+    const normalizedName = name.trim().toLowerCase();
+
+    try {
+        // Verificar si ya existe
+        const existing = await pool.query(
+            'SELECT * FROM foods WHERE LOWER(name) = $1 LIMIT 1',
+            [normalizedName]
+        );
+
+        if (existing.rows.length > 0) {
+            return res.status(409).json({ error: 'El alimento ya existe' });
+        }
+
+        // Insertar si no existe
+        const result = await pool.query(
+            `INSERT INTO foods (name, created_by_user_id)
+             VALUES ($1, $2)
+             RETURNING *`,
+            [name.trim(), userId || null]
+        );
+
+        res.status(201).json({ message: 'Alimento creado', food: result.rows[0] });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al crear alimento' });
+    }
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
