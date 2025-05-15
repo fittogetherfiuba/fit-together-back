@@ -73,46 +73,90 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+
 // Establecer objetivos
 app.post('/api/goals', async (req, res) => {
-    const { userId, goalId, goal } = req.body;
+    const { userId, type, goal } = req.body;
+
+    const allowedTypes = ['calories', 'water'];
+    const normalizedType = typeof type === 'string' ? type.trim().toLowerCase() : null;
 
     if (!userId) {
         return res.status(400).json({ error: 'Falta userId' });
     }
 
-    if (!goalId || typeof goalId !== 'string' || goalId.trim() === '') {
-        return res.status(400).json({ error: 'goalId inválido o vacío' });
+    if (!normalizedType || !allowedTypes.includes(normalizedType)) {
+        return res.status(400).json({ error: 'type inválido. Debe ser "calories" o "water"' });
     }
 
     if (goal === undefined) {
         return res.status(400).json({ error: 'Falta goal' });
     }
 
-    if (typeof goal !== 'number') {
-        return res.status(400).json({ error: 'goal debe ser un número' });
-    }
-
-    if (goal <= 0) {
-        return res.status(400).json({ error: 'goal debe ser mayor a 0' });
+    if (typeof goal !== 'number' || goal <= 0) {
+        return res.status(400).json({ error: 'goal debe ser un número mayor a 0' });
     }
 
     try {
         const result = await pool.query(
             `
-              INSERT INTO user_goals (user_id, goal_id, goal_value)
+              INSERT INTO user_goals (user_id, type, goal_value)
               VALUES ($1, $2, $3)
-              ON CONFLICT (user_id, goal_id)
+              ON CONFLICT (user_id, type)
               DO UPDATE SET goal_value = EXCLUDED.goal_value
               RETURNING *;
             `,
-            [userId, goalId, goal]
+            [userId, normalizedType, goal]
         );
-      
+
         res.status(201).json({ message: 'Objetivo guardado', goal: toCamelCase(result.rows[0]) });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al guardar objetivo en la base de datos' });
+    }
+});
+
+// Obtener objetivos
+app.get('/api/goals/:userId', async (req, res) => {
+    const { userId } = req.params;
+    const type = req.query.type?.toLowerCase(); // <- esto solo
+
+    const allowedTypes = ['calories', 'water'];
+
+    if (!userId) {
+        return res.status(400).json({ error: 'Falta userId' });
+    }
+
+    if (type && !allowedTypes.includes(type)) {
+        return res.status(400).json({ error: 'type inválido. Debe ser "calories" o "water"' });
+    }
+
+    try {
+        const result = await pool.query(
+            `
+            SELECT type, goal_value
+            FROM user_goals
+            WHERE user_id = $1
+            ${type ? 'AND type = $2' : ''}
+            `,
+            type ? [userId, type] : [userId]
+        );
+
+        if (type) {
+            const goal = result.rows[0] ? Number(result.rows[0].goal_value) : null;
+            return res.json(toCamelCase({ type, goal }));
+        }
+
+        const goals = {};
+        result.rows.forEach(row => {
+            goals[row.type] = Number(row.goal_value);
+        });
+
+        res.json({ goals });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener objetivos del usuario' });
     }
 });
 
@@ -231,7 +275,7 @@ app.get('/api/foods', async (req, res) => {
         const result = await pool.query(
             `SELECT * FROM foods ORDER BY name ASC`
         );
-        res.json(toCamelCase(toCamelCase(result.rows)));
+        res.json(toCamelCase(result.rows));
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener alimentos' });
