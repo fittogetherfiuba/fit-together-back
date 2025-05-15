@@ -86,3 +86,10 @@ INSERT INTO activities (name, created_by_user_id) VALUES
 ('Burpees', NULL),
 ('Abdominales', NULL),
 ('Yoga', NULL);
+
+CREATE TABLE water_entries (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    liters NUMERIC NOT NULL CHECK (liters > 0),
+    consumed_at DATE NOT NULL DEFAULT CURRENT_DATE
+);

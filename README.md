@@ -45,3 +45,18 @@ curl --location 'http://localhost:3000/api/foods' \
 --header 'Content-Type: application/json' \
 --data ''
 ```
+
+## Agregar agua consumida
+```bash
+curl --location --request POST 'http://localhost:3000/api/water/entry' \
+--header 'Content-Type: application/json' \
+--data '{
+  "userId": 1,
+  "liters": 2.5
+}'
+```
+
+## Ver agua consumida
+```bash
+curl --location --request GET 'http://localhost:3000/api/water/entries?userId=1&from=2025-05-01&to=2025-05-15'
+```
