@@ -205,13 +205,19 @@ app.get('/api/foods/entry/:userId', async (req, res) => {
 
     try {
         const result = await pool.query(
-            `SELECT ufe.id, ufe.quantity, ufe.consumed_at, f.name AS food_name
+            `SELECT 
+                ufe.id, 
+                ufe.grams, 
+                ufe.calories, 
+                ufe.consumed_at, 
+                f.name AS food_name
              FROM user_food_entries ufe
              JOIN foods f ON ufe.food_id = f.id
              WHERE ufe.user_id = $1
              ORDER BY ufe.consumed_at DESC`,
             [userId]
         );
+
         res.json({ entries: toCamelCase(result.rows) });
     } catch (err) {
         console.error(err);
