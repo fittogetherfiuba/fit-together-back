@@ -25,7 +25,8 @@ curl --location --request POST 'http://localhost:3000/api/foods/entry' \
 --data '{
   "userId": 1,
   "foodName": "Manzana",
-  "quantity": 150
+  "grams": 150,
+  "consumedAt": "2025-05-15"
 }'
 ```
 
@@ -35,7 +36,8 @@ curl --location --request POST 'http://localhost:3000/api/foods' \
 --header 'Content-Type: application/json' \
 --data '{
   "name": "Manzana",
-  "userId": 1
+  "userId": 1,
+  "caloriesPer100g": 52
 }'
 ```
 

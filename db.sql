@@ -27,7 +27,8 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO test;
 CREATE TABLE foods (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    created_by_user_id INTEGER REFERENCES users(id)
+    created_by_user_id INTEGER REFERENCES users(id),
+    calories_per_100g NUMERIC
 );
 
 -- Tabla de entradas de comida consumida
@@ -35,7 +36,8 @@ CREATE TABLE user_food_entries (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
     food_id INTEGER REFERENCES foods(id),
-    quantity NUMERIC NOT NULL CHECK (quantity > 0),  -- en gramos, ml, unidades, etc.
+    grams NUMERIC NOT NULL CHECK (grams > 0),
+    calories NUMERIC,  -- se calculará al insertar: (grams * calories_per_100g) / 100
     consumed_at DATE NOT NULL DEFAULT CURRENT_DATE
 );
 
@@ -58,22 +60,22 @@ CREATE TABLE user_activity_entries (
     performed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO foods (name, created_by_user_id) VALUES
-('Manzana', NULL),
-('Banana', NULL),
-('Pollo', NULL),
-('Arroz', NULL),
-('Leche', NULL),
-('Pan integral', NULL),
-('Huevos', NULL),
-('Yogur', NULL),
-('Carne vacuna', NULL),
-('Lentejas', NULL),
-('Pasta', NULL),
-('Tomate', NULL),
-('Queso', NULL),
-('Aceite de oliva', NULL),
-('Avena', NULL);
+INSERT INTO foods (name, created_by_user_id, calories_per_100g) VALUES
+('Manzana', NULL, 52),
+('Banana', NULL, 89),
+('Pollo', NULL, 165),
+('Arroz', NULL, 130),
+('Leche', NULL, 42),
+('Pan integral', NULL, 247),
+('Huevos', NULL, 143),
+('Yogur', NULL, 59),
+('Carne vacuna', NULL, 250),
+('Lentejas', NULL, 116),
+('Pasta', NULL, 131),
+('Tomate', NULL, 18),
+('Queso', NULL, 402),
+('Aceite de oliva', NULL, 884),
+('Avena', NULL, 389);
 
 INSERT INTO activities (name, created_by_user_id) VALUES
 ('Caminar', NULL),
