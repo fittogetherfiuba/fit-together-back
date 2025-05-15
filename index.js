@@ -118,55 +118,59 @@ app.post('/api/goals', async (req, res) => {
 
 // Agregar comida consumida
 app.post('/api/foods/entry', async (req, res) => {
-    const { userId, foodName, quantity, consumedAt } = req.body;
-
+    const { userId, foodName, grams, consumedAt } = req.body;
+  
     if (!userId) return res.status(400).json({ error: 'Falta userId' });
     if (!foodName || typeof foodName !== 'string') {
-        return res.status(400).json({ error: 'foodName inválido o vacío' });
+      return res.status(400).json({ error: 'foodName inválido o vacío' });
     }
-    if (typeof quantity !== 'number' || quantity <= 0) {
-        return res.status(400).json({ error: 'quantity debe ser un número mayor a 0' });
+    if (typeof grams !== 'number' || grams <= 0) {
+      return res.status(400).json({ error: 'grams debe ser un número mayor a 0' });
     }
-
+  
     try {
-        const foodResult = await pool.query(
-            'SELECT id FROM foods WHERE LOWER(name) = LOWER($1) LIMIT 1',
-            [foodName.trim()]
-        );
-
-        if (foodResult.rows.length === 0) {
-            return res.status(404).json({ error: 'El alimento no existe' });
-        }
-
-        const foodId = foodResult.rows[0].id;
-
-        const insertResult = await pool.query(
-            `INSERT INTO user_food_entries (user_id, food_id, quantity, consumed_at)
-             VALUES ($1, $2, $3, $4)
-             RETURNING *`,
-            [userId, foodId, quantity, consumedAt || new Date()]
-        );
-
-        res.status(201).json({ message: 'Comida registrada', entry: toCamelCase(insertResult.rows[0]) });
-
+      const foodResult = await pool.query(
+        'SELECT id, calories_per_100g FROM foods WHERE LOWER(name) = LOWER($1) LIMIT 1',
+        [foodName.trim()]
+      );
+  
+      if (foodResult.rows.length === 0) {
+        return res.status(404).json({ error: 'El alimento no existe' });
+      }
+  
+      const { id: foodId, calories_per_100g } = foodResult.rows[0];
+      const calories = calories_per_100g ? (grams * calories_per_100g) / 100 : null;
+  
+      const insertResult = await pool.query(
+        `INSERT INTO user_food_entries (user_id, food_id, grams, calories, consumed_at)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING *`,
+        [userId, foodId, grams, calories, consumedAt || new Date()]
+      );
+  
+      res.status(201).json({ message: 'Comida registrada', entry: toCamelCase(insertResult.rows[0]) });
+  
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Error al registrar la comida' });
+      console.error(err);
+      res.status(500).json({ error: 'Error al registrar la comida' });
     }
-});
+  });
 
 // Agregar comida
 app.post('/api/foods', async (req, res) => {
-    const { name, userId } = req.body;
+    const { name, userId, caloriesPer100g } = req.body;
 
     if (!name || typeof name !== 'string' || name.trim() === '') {
         return res.status(400).json({ error: 'name inválido o vacío' });
     }
 
+    if (caloriesPer100g !== undefined && (typeof caloriesPer100g !== 'number' || caloriesPer100g < 0)) {
+        return res.status(400).json({ error: 'caloriesPer100g debe ser un número mayor o igual a 0' });
+    }
+
     const normalizedName = name.trim().toLowerCase();
 
     try {
-        // Verificar si ya existe
         const existing = await pool.query(
             'SELECT * FROM foods WHERE LOWER(name) = $1 LIMIT 1',
             [normalizedName]
@@ -176,12 +180,11 @@ app.post('/api/foods', async (req, res) => {
             return res.status(409).json({ error: 'El alimento ya existe' });
         }
 
-        // Insertar si no existe
         const result = await pool.query(
-            `INSERT INTO foods (name, created_by_user_id)
-             VALUES ($1, $2)
+            `INSERT INTO foods (name, created_by_user_id, calories_per_100g)
+             VALUES ($1, $2, $3)
              RETURNING *`,
-            [name.trim(), userId || null]
+            [name.trim(), userId || null, caloriesPer100g ?? null]
         );
 
         res.status(201).json({ message: 'Alimento creado', food: toCamelCase(result.rows[0]) });
@@ -202,13 +205,19 @@ app.get('/api/foods/entry/:userId', async (req, res) => {
 
     try {
         const result = await pool.query(
-            `SELECT ufe.id, ufe.quantity, ufe.consumed_at, f.name AS food_name
+            `SELECT 
+                ufe.id, 
+                ufe.grams, 
+                ufe.calories, 
+                ufe.consumed_at, 
+                f.name AS food_name
              FROM user_food_entries ufe
              JOIN foods f ON ufe.food_id = f.id
              WHERE ufe.user_id = $1
              ORDER BY ufe.consumed_at DESC`,
             [userId]
         );
+
         res.json({ entries: toCamelCase(result.rows) });
     } catch (err) {
         console.error(err);
@@ -222,7 +231,7 @@ app.get('/api/foods', async (req, res) => {
         const result = await pool.query(
             `SELECT * FROM foods ORDER BY name ASC`
         );
-        res.json(toCamelCase(result.rows));
+        res.json(toCamelCase(toCamelCase(result.rows)));
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener alimentos' });
