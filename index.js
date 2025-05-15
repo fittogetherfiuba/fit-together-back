@@ -108,7 +108,7 @@ app.post('/api/goals', async (req, res) => {
             [userId, goalId, goal]
         );
       
-        res.status(201).json({ message: 'Objetivo guardado', goal: result.rows[0] });
+        res.status(201).json({ message: 'Objetivo guardado', goal: toCamelCase(result.rows[0]) });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al guardar objetivo en la base de datos' });
@@ -146,7 +146,7 @@ app.post('/api/foods/entry', async (req, res) => {
             [userId, foodId, quantity, consumedAt || new Date()]
         );
 
-        res.status(201).json({ message: 'Comida registrada', entry: insertResult.rows[0] });
+        res.status(201).json({ message: 'Comida registrada', entry: toCamelCase(insertResult.rows[0]) });
 
     } catch (err) {
         console.error(err);
@@ -183,7 +183,7 @@ app.post('/api/foods', async (req, res) => {
             [name.trim(), userId || null]
         );
 
-        res.status(201).json({ message: 'Alimento creado', food: result.rows[0] });
+        res.status(201).json({ message: 'Alimento creado', food: toCamelCase(result.rows[0]) });
 
     } catch (err) {
         console.error(err);
@@ -208,7 +208,7 @@ app.get('/api/foods/entry/:userId', async (req, res) => {
              ORDER BY ufe.consumed_at DESC`,
             [userId]
         );
-        res.json({ entries: result.rows });
+        res.json({ entries: toCamelCase(result.rows) });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener comidas del usuario' });
@@ -221,7 +221,7 @@ app.get('/api/foods', async (req, res) => {
         const result = await pool.query(
             `SELECT * FROM foods ORDER BY name ASC`
         );
-        res.json(result.rows);
+        res.json(toCamelCase(result.rows));
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener alimentos' });
@@ -241,7 +241,7 @@ app.get('/api/activities/entry/:userId', async (req, res) => {
              ORDER BY uae.performed_at DESC`,
             [userId]
         );
-        res.json({ entries: result.rows });
+        res.json({ entries: toCamelCase(result.rows) });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener actividades del usuario' });
@@ -255,7 +255,7 @@ app.post('/api/activities/entry', async (req, res) => {
     if (!userId || !activityName) {
         return res.status(400).json({ error: 'Faltan campos obligatorios: userId y activityName' });
     }
-
+   
     try {
         // Buscar ID de la actividad
         const activityRes = await pool.query(
@@ -285,7 +285,7 @@ app.post('/api/activities/entry', async (req, res) => {
             ]
         );
 
-        res.status(201).json({ message: 'Actividad registrada', entry: insertRes.rows[0] });
+        res.status(201).json({ message: 'Actividad registrada', entry: toCamelCase(insertRes.rows[0]) });
 
     } catch (err) {
         console.error(err);
@@ -305,8 +305,81 @@ app.get('/api/activities', async (req, res) => {
     }
 });
 
+// Cargar agua consumida
+app.post('/api/water/entry', async (req, res) => {
+    const { userId, liters } = req.body;
+  
+    if (!userId || typeof liters !== 'number' || liters <= 0) {
+      return res.status(400).json({ error: 'Datos inválidos: se requiere userId y liters > 0' });
+    }
+  
+    try {
+      const result = await pool.query(
+        `INSERT INTO water_entries (user_id, liters)
+         VALUES ($1, $2)
+         RETURNING *`,
+        [userId, liters]
+      );
+  
+      res.status(201).json({ message: 'Registro de agua guardado', entry: toCamelCase(result.rows[0]) });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al registrar el consumo de agua' });
+    }
+  });
+
+// Obtener agua consumida
+app.get('/api/water/entries', async (req, res) => {
+    const { userId, from, to } = req.query;
+  
+    if (!userId) {
+      return res.status(400).json({ error: 'Falta userId' });
+    }
+  
+    try {
+      const result = await pool.query(
+        `
+        SELECT * FROM water_entries
+        WHERE user_id = $1
+          AND consumed_at >= COALESCE($2::date, '1970-01-01')
+          AND consumed_at <= COALESCE($3::date, CURRENT_DATE)
+        ORDER BY consumed_at DESC
+        `,
+        [userId, from || null, to || null]
+      );
+  
+      res.json({ entries: toCamelCase(result.rows) });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al obtener registros de agua' });
+    }
+  });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+function toCamelCase(obj) {
+    if (Array.isArray(obj)) {
+      return obj.map(toCamelCase);
+    }
+  
+    if (obj instanceof Date) {
+      return obj; // dejar fechas intactas
+    }
+  
+    if (obj !== null && typeof obj === 'object') {
+      return Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => [
+          key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase()),
+          toCamelCase(value)
+        ])
+      );
+    }
+  
+    return obj;
+  }
+
+  
