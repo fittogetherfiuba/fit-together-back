@@ -120,16 +120,33 @@ app.post('/api/goals', async (req, res) => {
 // Obtener objetivos
 app.get('/api/goals/:userId', async (req, res) => {
     const { userId } = req.params;
+    const type = req.query.type?.toLowerCase(); // <- esto solo
+
+    const allowedTypes = ['calories', 'water'];
 
     if (!userId) {
         return res.status(400).json({ error: 'Falta userId' });
     }
 
+    if (type && !allowedTypes.includes(type)) {
+        return res.status(400).json({ error: 'type inválido. Debe ser "calories" o "water"' });
+    }
+
     try {
         const result = await pool.query(
-            `SELECT type, goal_value FROM user_goals WHERE user_id = $1`,
-            [userId]
+            `
+            SELECT type, goal_value
+            FROM user_goals
+            WHERE user_id = $1
+            ${type ? 'AND type = $2' : ''}
+            `,
+            type ? [userId, type] : [userId]
         );
+
+        if (type) {
+            const goal = result.rows[0] ? Number(result.rows[0].goal_value) : null;
+            return res.json(toCamelCase({ type, goal }));
+        }
 
         const goals = {};
         result.rows.forEach(row => {
@@ -258,7 +275,7 @@ app.get('/api/foods', async (req, res) => {
         const result = await pool.query(
             `SELECT * FROM foods ORDER BY name ASC`
         );
-        res.json(toCamelCase(toCamelCase(result.rows)));
+        res.json(toCamelCase(result.rows));
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener alimentos' });

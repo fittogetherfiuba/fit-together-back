@@ -8,14 +8,24 @@ Este archivo contiene ejemplos listos para probar los endpoints.
 
 ## Establecer objetivo
 
+Actualmente se permiten los siguientes tipos de objetivo:
+
+- `water`: litros de agua 
+- `calories`: calorías diarias
+
 ```bash
 curl --location --request POST 'http://localhost:3000/api/goals' \
 --header 'Content-Type: application/json' \
 --data '{
   "userId": 1,
-  "goalId": "daily_steps",
-  "goal": 10000
+  "type": "WATER",
+  "goal": 2.5
 }'
+```
+
+## Get objetivo
+```bash
+curl --location --request GET 'http://localhost:3000/api/goals/1?type=calories'
 ```
 
 ## Agregar comida consumida

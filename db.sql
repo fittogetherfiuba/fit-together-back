@@ -11,9 +11,9 @@ CREATE TABLE users (
 CREATE TABLE user_goals (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    goal_id TEXT NOT NULL,
+    type TEXT NOT NULL CHECK (type IN ('calories', 'water')),
     goal_value NUMERIC NOT NULL CHECK (goal_value > 0),
-    CONSTRAINT unique_user_goal UNIQUE (user_id, goal_id)
+    CONSTRAINT unique_user_goal UNIQUE (user_id, type)
 );
 
 GRANT CONNECT ON DATABASE fittogether TO test;
