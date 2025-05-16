@@ -269,6 +269,54 @@ app.get('/api/foods/entry/:userId', async (req, res) => {
     }
 });
 
+// Cantidad de calorías de usuario consumidas en un día dado
+app.get('/api/foods/calories/daily', async (req, res) => {
+  const { userId, date } = req.query;
+  if (!userId || !date) {
+    return res.status(400).json({ error: 'Faltan userId o date (YYYY-MM-DD)' });
+  }
+  try {
+    const { rows } = await pool.query(
+        `SELECT COALESCE(SUM(calories), 0) AS total_calories
+        FROM user_food_entries
+        WHERE user_id = $1
+            AND consumed_at >= $2::date
+            AND consumed_at < ($2::date + INTERVAL '1 day')`,
+      [userId, date]
+    );
+    res.json({ date, totalCalories: Number(rows[0].total_calories) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al calcular calorías diarias' });
+  }
+});
+
+// Cantidad de agua consumida por el usuario en un día dado
+app.get('/api/water/daily', async (req, res) => {
+  const { userId, date } = req.query;
+
+  if (!userId || !date) {
+    return res.status(400).json({ error: 'Faltan userId o date (YYYY-MM-DD)' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT COALESCE(SUM(liters), 0) AS total_liters
+       FROM water_entries
+       WHERE user_id = $1
+         AND consumed_at = $2::date`,
+      [userId, date]
+    );
+
+    res.json({ date, totalLiters: Number(rows[0].total_liters) });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al calcular agua diaria' });
+  }
+});
+
+
 // Ver comidas disponibles
 app.get('/api/foods', async (req, res) => {
     try {
