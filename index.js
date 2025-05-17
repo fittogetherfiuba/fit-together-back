@@ -23,6 +23,40 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
+// Actualizar usuario
+app.put('/api/users/:id', async (req, res) => {
+    const userId = req.params.id;
+    const { fullname, birthday, weight, height, description } = req.body;
+
+    try {
+        const result = await pool.query(
+            `
+            UPDATE users
+            SET
+                fullname = $1,
+                birthday = $2,
+                weight = $3,
+                height = $4,
+                description = $5
+            WHERE id = $6
+            RETURNING *;
+            `,
+            [fullname, birthday, weight, height, description, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json({ message: 'Usuario actualizado', user: result.rows[0] });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al actualizar usuario' });
+    }
+});
+
+
 
 // REGISTRO
 app.post('/api/register', async (req, res) => {
