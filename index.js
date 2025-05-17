@@ -269,11 +269,11 @@ app.get('/api/foods/entry/:userId', async (req, res) => {
     }
 });
 
-// Cantidad de calorías de usuario consumidas en un día dado
+// Cantidad de calorías de usuario consumidas en un día dado (sin dia dado -> dia acutal)
 app.get('/api/foods/calories/daily', async (req, res) => {
   const { userId, date } = req.query;
-  if (!userId || !date) {
-    return res.status(400).json({ error: 'Faltan userId o date (YYYY-MM-DD)' });
+  if (!userId) {
+    return res.status(400).json({ error: 'Faltan userId' });
   }
   try {
     const { rows } = await pool.query(
@@ -282,7 +282,7 @@ app.get('/api/foods/calories/daily', async (req, res) => {
         WHERE user_id = $1
             AND consumed_at >= $2::date
             AND consumed_at < ($2::date + INTERVAL '1 day')`,
-      [userId, date]
+      [userId, date || new Date()]
     );
     res.json({ date, totalCalories: Number(rows[0].total_calories) });
   } catch (err) {
@@ -291,12 +291,12 @@ app.get('/api/foods/calories/daily', async (req, res) => {
   }
 });
 
-// Cantidad de agua consumida por el usuario en un día dado
+// Cantidad de agua consumida por el usuario en un día dado (sin dia dado -> dia acutal)
 app.get('/api/water/daily', async (req, res) => {
   const { userId, date } = req.query;
 
-  if (!userId || !date) {
-    return res.status(400).json({ error: 'Faltan userId o date (YYYY-MM-DD)' });
+  if (!userId) {
+    return res.status(400).json({ error: 'Faltan userId' });
   }
 
   try {
@@ -305,7 +305,7 @@ app.get('/api/water/daily', async (req, res) => {
        FROM water_entries
        WHERE user_id = $1
          AND consumed_at = $2::date`,
-      [userId, date]
+      [userId, date || new Date()]
     );
 
     res.json({ date, totalLiters: Number(rows[0].total_liters) });
