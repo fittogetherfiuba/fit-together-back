@@ -5,6 +5,7 @@ CREATE DATABASE fittogether OWNER test;
 CREATE TABLE users (
                        id SERIAL PRIMARY KEY,
                        email TEXT UNIQUE NOT NULL,
+                       username TEXT UNIQUE NOT NULL,
                        password TEXT NOT NULL,
                        fullname TEXT,
                        birthday DATE,
