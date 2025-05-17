@@ -5,6 +5,15 @@ require('dotenv').config();
 const bcrypt = require('bcrypt');
 const { toCamelCase } = require('./utils');
 
+function getFormattedDate() {
+    const date = new Date()
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    
+    return `${day}/${month}/${year}`
+  }
+
 const app = express();
 app.use(cors());
 app.use(express.json()); // para parsear JSON
@@ -36,7 +45,8 @@ app.get('/api/users/:username', async (req, res) => {
          birthday,
          weight,
          height,
-         description
+         description, 
+         registrationDay
        FROM users
        WHERE username = $1`,
             [username]
@@ -92,18 +102,18 @@ app.put('/api/users/:username', async (req, res) => {
 
 // REGISTRO
 app.post('/api/register', async (req, res) => {
-    const { email, password, username } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Faltan campos' });
+    const { email, password, username, fullname } = req.body;
+    if (!email || !password || !username || !fullname) return res.status(400).json({ error: 'Faltan campos' });
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const result = await pool.query(
-            'INSERT INTO users (email, password, username) VALUES ($1, $2, $3) RETURNING id',
-            [email, hashedPassword, username]
+            'INSERT INTO users (email, password, username, fullname, registrationDay) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [email, hashedPassword, username, fullname, getFormattedDate()]
         );
 
-        res.status(201).json({ message: 'Usuario registrado', userId: result.rows[0].id });
+        res.status(201).json({ username: result.rows[0].username });
     } catch (err) {
         if (err.code === '23505') {
             res.status(409).json({ error: 'El email ya está registrado' });
@@ -132,7 +142,7 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: 'Email o contraseña incorrectos' });
         }
 
-        res.json({ message: 'Login exitoso', userId: user.id });
+        res.json({ username: user.username, userId: user.id });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error en el servidor' });

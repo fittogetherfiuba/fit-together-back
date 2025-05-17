@@ -9,6 +9,7 @@ CREATE TABLE users (
                        password TEXT NOT NULL,
                        fullname TEXT,
                        birthday DATE,
+                       registrationDay TEXT,
                        weight NUMERIC,
                        height NUMERIC,
                        description TEXT
