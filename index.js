@@ -5,6 +5,15 @@ require('dotenv').config();
 const bcrypt = require('bcrypt');
 const { toCamelCase } = require('./utils');
 
+function getFormattedDate() {
+    const date = new Date()
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    
+    return `${day}/${month}/${year}`
+  }
+
 const app = express();
 app.use(cors());
 app.use(express.json()); // para parsear JSON
@@ -23,21 +32,88 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
+app.get('/api/users/:username', async (req, res) => {
+    const { username } = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT 
+         id,
+         username,
+         fullname,
+         email,
+         birthday,
+         weight,
+         height,
+         description, 
+         registrationDay
+       FROM users
+       WHERE username = $1`,
+            [username]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json(result.rows[0]);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener usuario' });
+    }
+});
+
+app.put('/api/users/:username', async (req, res) => {
+    const { username } = req.params;
+    const { fullname, birthday, weight, height, description } = req.body;
+
+    try {
+        const result = await pool.query(
+            `
+                UPDATE users
+                SET
+                    fullname = $1,
+                    birthday = $2,
+                    weight = $3,
+                    height = $4,
+                    description = $5
+                WHERE username = $6
+                    RETURNING 
+        id, username, fullname, email, birthday, weight, height, description;
+            `,
+            [fullname, birthday, weight, height, description, username]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json({ message: 'Usuario actualizado', user: result.rows[0] });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al actualizar usuario' });
+    }
+});
+
+
+
 
 // REGISTRO
 app.post('/api/register', async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Faltan campos' });
+    const { email, password, username, fullname } = req.body;
+    if (!email || !password || !username || !fullname) return res.status(400).json({ error: 'Faltan campos' });
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const result = await pool.query(
-            'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id',
-            [email, hashedPassword]
+            'INSERT INTO users (email, password, username, fullname, registrationDay) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [email, hashedPassword, username, fullname, getFormattedDate()]
         );
 
-        res.status(201).json({ message: 'Usuario registrado', userId: result.rows[0].id });
+        res.status(201).json({ username: result.rows[0].username });
     } catch (err) {
         if (err.code === '23505') {
             res.status(409).json({ error: 'El email ya está registrado' });
@@ -66,7 +142,7 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: 'Email o contraseña incorrectos' });
         }
 
-        res.json({ message: 'Login exitoso', userId: user.id });
+        res.json({ username: user.username, userId: user.id });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error en el servidor' });
