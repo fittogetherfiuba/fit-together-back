@@ -316,6 +316,72 @@ app.get('/api/water/daily', async (req, res) => {
   }
 });
 
+// GET /api/foods/calories/since-last-monday?userId=123
+app.get('/api/foods/calories/since-last-monday', async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(400).json({ error: 'Falta userId en la query' });
+  }
+
+  const now = new Date();
+  // 0 = domingo … 1 = lunes … 6 = sábado
+  const todayDay = now.getDay(); 
+  // Cuántos días restar para llegar al lunes
+  const daysSinceMonday = (todayDay + 6) % 7;
+  const lastMonday = new Date(now);
+  lastMonday.setDate(now.getDate() - daysSinceMonday);
+  lastMonday.setHours(0, 0, 0, 0);  // corte a medianoche
+  const mondayStr = lastMonday.toISOString().slice(0, 10);
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT COALESCE(SUM(calories), 0) AS total_calories
+         FROM user_food_entries
+        WHERE user_id = $1
+          AND consumed_at >= $2::date`,
+      [userId, mondayStr]
+    );
+    return res.json({since: mondayStr, until: now.toISOString(), totalCalories: Number(rows[0].total_calories)});
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error al calcular calorías desde el último lunes' });
+  }
+});
+
+
+// GET /api/water/since-last-monday?userId=123
+app.get('/api/water/since-last-monday', async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(400).json({ error: 'Falta userId en la query' });
+  }
+
+  const now = new Date();
+  // 0 = domingo … 1 = lunes … 6 = sábado
+  const todayDay = now.getDay();  // :contentReference[oaicite:0]{index=0}
+  // Cuántos días restar para llegar al lunes
+  const daysSinceMonday = (todayDay + 6) % 7;
+  const lastMonday = new Date(now);
+  lastMonday.setDate(now.getDate() - daysSinceMonday);
+  lastMonday.setHours(0, 0, 0, 0);  // corte a medianoche
+  const mondayStr = lastMonday.toISOString().slice(0, 10);
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT COALESCE(SUM(liters), 0) AS total_liters
+         FROM water_entries
+        WHERE user_id = $1
+          AND consumed_at >= $2::date`,
+      [userId, mondayStr]
+    );
+
+    return res.json({since: mondayStr, until: now.toISOString(), totalLiters: Number(rows[0].total_liters)});
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error al calcular agua desde el último lunes' });
+  }
+});
+
 
 // Ver comidas disponibles
 app.get('/api/foods', async (req, res) => {
