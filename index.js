@@ -316,7 +316,7 @@ app.get('/api/water/daily', async (req, res) => {
   }
 });
 
-// GET /api/foods/calories/since-last-monday?userId=123
+// Cantidad de calorias consumida por el usuario desde ultimo dia hata dia acual
 app.get('/api/foods/calories/since-last-monday', async (req, res) => {
   const { userId } = req.query;
   if (!userId) {
@@ -349,7 +349,7 @@ app.get('/api/foods/calories/since-last-monday', async (req, res) => {
 });
 
 
-// GET /api/water/since-last-monday?userId=123
+// Cantidad de agua consumida por el usuario desde ultimo dia hata dia acual
 app.get('/api/water/since-last-monday', async (req, res) => {
   const { userId } = req.query;
   if (!userId) {
