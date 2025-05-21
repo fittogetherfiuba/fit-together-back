@@ -113,6 +113,7 @@ app.post('/api/register', async (req, res) => {
             [email, hashedPassword, username, fullname, getFormattedDate()]
         );
 
+        const user = result.rows[0];
         res.status(201).json({ username: user.username, userId: user.id });
     } catch (err) {
         if (err.code === '23505') {
