@@ -604,4 +604,62 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
-  
+
+
+// Actividades realizadas por el usuario desde ultimo dia hata dia acual
+app.get('/api/activities/since-last-monday', async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(400).json({ error: 'Falta userId en la query' });
+  }
+
+  // Calcular fecha del último lunes a medianoche
+  const now = new Date();
+  const todayDay = now.getDay();               // 0=domingo…6=sábado
+  const daysSinceMonday = (todayDay + 6) % 7;   // lunes→0, martes→1, …
+  const lastMonday = new Date(now);
+  lastMonday.setDate(now.getDate() - daysSinceMonday);
+  lastMonday.setHours(0, 0, 0, 0);
+  const mondayISO = lastMonday.toISOString();  // timestamp ISO
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT uae.id,
+              a.name        AS activity_name,
+              uae.duration_minutes,
+              uae.distance_km,
+              uae.series,
+              uae.repetitions,
+              uae.performed_at
+         FROM user_activity_entries uae
+         JOIN activities a
+           ON uae.activity_id = a.id
+        WHERE uae.user_id = $1
+          AND uae.performed_at >= $2
+        ORDER BY uae.performed_at DESC`,
+      [userId, mondayISO]
+    );
+
+    // Convertir columnas a camelCase si existe toCamelCase, o manualmente:
+    const entries = rows.map(r => ({
+      id:               r.id,
+      activityName:     r.activity_name,
+      durationMinutes:  r.duration_minutes,
+      distanceKm:       r.distance_km,
+      series:           r.series,
+      repetitions:      r.repetitions,
+      performedAt:      r.performed_at
+    }));
+
+    return res.json({
+      since:  lastMonday.toISOString().slice(0,10),
+      until:  now.toISOString(),
+      entries
+    });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: 'Error al obtener actividades desde el último lunes' });
+  }
+});
