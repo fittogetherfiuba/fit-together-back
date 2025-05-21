@@ -113,7 +113,7 @@ app.post('/api/register', async (req, res) => {
             [email, hashedPassword, username, fullname, getFormattedDate()]
         );
 
-        res.status(201).json({ username: result.rows[0].username });
+        res.status(201).json({ username: user.username, userId: user.id });
     } catch (err) {
         if (err.code === '23505') {
             res.status(409).json({ error: 'El email ya está registrado' });
