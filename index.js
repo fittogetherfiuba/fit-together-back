@@ -664,3 +664,82 @@ app.get('/api/activities/since-last-monday', async (req, res) => {
       .json({ error: 'Error al obtener actividades desde el último lunes' });
   }
 });
+
+
+//  Lista de comidas consumidas desde el último lunes
+app.get('/api/foods/entries/since-last-monday', async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(400).json({ error: 'Falta userId en la query' });
+  }
+
+  const now = new Date();
+  const todayDay      = now.getDay();                  // 0 = domingo … 1 = lunes … 6 = sábado
+  const daysMonday    = (todayDay + 6) % 7;            // desplazamiento para llegar al lunes
+  const lastMonday    = new Date(now);
+  lastMonday.setDate(now.getDate() - daysMonday);
+  lastMonday.setHours(0,0,0,0);
+  const mondayStr     = lastMonday.toISOString().slice(0,10);
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT f.name    AS foodName,
+              e.calories AS calories,
+              e.consumed_at
+         FROM user_food_entries e
+    INNER JOIN foods               f ON e.food_id = f.id
+        WHERE e.user_id   = $1
+          AND e.consumed_at >= $2::date`,
+      [userId, mondayStr]
+    );
+
+    return res.json({
+      since:   mondayStr,
+      until:   now.toISOString(),
+      entries: rows
+    });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: 'Error al obtener comidas desde el último lunes' });
+  }
+});
+
+//  Lista de agua consumida desde el último lunes
+app.get('/api/water/entries/since-last-monday', async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(400).json({ error: 'Falta userId en la query' });
+  }
+
+  const now = new Date();
+  const todayDay      = now.getDay();
+  const daysMonday    = (todayDay + 6) % 7;
+  const lastMonday    = new Date(now);
+  lastMonday.setDate(now.getDate() - daysMonday);
+  lastMonday.setHours(0,0,0,0);
+  const mondayStr     = lastMonday.toISOString().slice(0,10);
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT liters,
+              consumed_at
+         FROM water_entries
+        WHERE user_id      = $1
+          AND consumed_at >= $2::date`,
+      [userId, mondayStr]
+    );
+
+    return res.json({
+      since:   mondayStr,
+      until:   now.toISOString(),
+      entries: rows
+    });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: 'Error al obtener agua desde el último lunes' });
+  }
+});
