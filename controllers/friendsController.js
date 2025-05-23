@@ -119,10 +119,10 @@ async function rejectRequest (req, res) {
 }
 
 async function removeFriend (req, res) {
-    const { usernameA, usernameB } = req.body;
+    const { firstUsername, secondUsername } = req.body;
     try {
-        const userIdA = await getUserIdByUsername(usernameA);
-        const userIdB = await getUserIdByUsername(usernameB);
+        const userIdA = await getUserIdByUsername(firstUsername);
+        const userIdB = await getUserIdByUsername(secondUsername);
         await pool.query(
             `DELETE FROM user_friends
        WHERE (user_id = $1 AND friend_id = $2)
