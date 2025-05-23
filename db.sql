@@ -102,3 +102,22 @@ CREATE TABLE water_entries (
     liters NUMERIC NOT NULL CHECK (liters > 0),
     consumed_at DATE NOT NULL DEFAULT CURRENT_DATE
 );
+
+
+CREATE TABLE friend_requests (
+                                 id SERIAL PRIMARY KEY,
+                                 sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                                 receiver_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                 CONSTRAINT unique_request UNIQUE (sender_id, receiver_id),
+                                 CHECK (sender_id <> receiver_id)
+);
+
+CREATE TABLE user_friends (
+                              id SERIAL PRIMARY KEY,
+                              user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                              friend_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                              CONSTRAINT unique_friendship UNIQUE (user_id, friend_id),
+                              CHECK (user_id <> friend_id)
+);
