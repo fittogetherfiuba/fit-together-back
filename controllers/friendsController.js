@@ -106,12 +106,14 @@ async function rejectRequest (req, res) {
     try {
         const senderId = await getUserIdByUsername(senderUsername);
         const receiverId = await getUserIdByUsername(receiverUsername);
+
+        
         await pool.query(
             `DELETE FROM friend_requests
        WHERE sender_id = $1 AND receiver_id = $2`,
             [senderId, receiverId]
         );
-        res.json({ message: 'Solicitud eliminada' });
+        res.status(202).json({ message: 'Solicitud eliminada' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });

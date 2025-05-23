@@ -5,8 +5,8 @@ const { acceptRequest, getFriends, getRequests, sendRequest, rejectRequest, remo
 router.get('/:username', getFriends)
 router.get('/requests/:username', getRequests)
 router.post('/requests', sendRequest)
-router.delete('/requests', rejectRequest)
+router.post('/requests/remove', rejectRequest)
 router.post('/accept', acceptRequest)
-router.delete('/remove', removeFriend)
+router.post('/remove', removeFriend)
 
 module.exports = router;
