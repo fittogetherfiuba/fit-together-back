@@ -63,7 +63,7 @@ async function acceptRequest (req, res) {
 
 async function getRequests (req, res) {
     try {
-        const userId = await getUserIdByUsername(pool, req.params.username);
+        const userId = await getUserIdByUsername(req.params.username);
         const { rows } = await pool.query(
             `SELECT u.username, u.fullname
        FROM friend_requests fr
@@ -85,8 +85,8 @@ async function sendRequest (req, res) {
         return res.status(400).json({ error: 'Datos inválidos' });
     }
     try {
-        const senderId = await getUserIdByUsername(pool, senderUsername);
-        const receiverId = await getUserIdByUsername(pool, receiverUsername);
+        const senderId = await getUserIdByUsername(senderUsername);
+        const receiverId = await getUserIdByUsername(receiverUsername);
         await pool.query(
             `INSERT INTO friend_requests (sender_id, receiver_id)
        VALUES ($1, $2)
@@ -104,8 +104,8 @@ async function sendRequest (req, res) {
 async function rejectRequest (req, res) {
     const { senderUsername, receiverUsername } = req.body;
     try {
-        const senderId = await getUserIdByUsername(pool, senderUsername);
-        const receiverId = await getUserIdByUsername(pool, receiverUsername);
+        const senderId = await getUserIdByUsername(senderUsername);
+        const receiverId = await getUserIdByUsername(receiverUsername);
         await pool.query(
             `DELETE FROM friend_requests
        WHERE sender_id = $1 AND receiver_id = $2`,
@@ -121,8 +121,8 @@ async function rejectRequest (req, res) {
 async function removeFriend (req, res) {
     const { usernameA, usernameB } = req.body;
     try {
-        const userIdA = await getUserIdByUsername(pool, usernameA);
-        const userIdB = await getUserIdByUsername(pool, usernameB);
+        const userIdA = await getUserIdByUsername(usernameA);
+        const userIdB = await getUserIdByUsername(usernameB);
         await pool.query(
             `DELETE FROM user_friends
        WHERE (user_id = $1 AND friend_id = $2)
