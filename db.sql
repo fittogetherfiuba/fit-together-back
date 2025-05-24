@@ -45,7 +45,8 @@ CREATE TABLE user_food_entries (
     food_id INTEGER REFERENCES foods(id),
     grams NUMERIC NOT NULL CHECK (grams > 0),
     calories NUMERIC,  -- se calculará al insertar: (grams * calories_per_100g) / 100
-    consumed_at DATE NOT NULL DEFAULT CURRENT_DATE
+    consumed_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    period TEXT CHECK (period IN ('desayuno', 'almuerzo', 'merienda', 'cena'))
 );
 
 -- Actividades disponibles (como "Correr", "Bicicleta", "Levantamiento de pesas", etc.)
