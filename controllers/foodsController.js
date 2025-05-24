@@ -3,43 +3,60 @@ const { toCamelCase } = require('../utils');
 
 
 // Agregar comida consumida
-async function addConsumedFood (req,res) {
-    const { userId, foodName, grams, consumedAt } = req.body;
-  
-    if (!userId) return res.status(400).json({ error: 'Falta userId' });
-    if (!foodName || typeof foodName !== 'string') {
-      return res.status(400).json({ error: 'foodName inválido o vacío' });
+async function addConsumedFood(req, res) {
+  const { userId, foodName, grams, consumedAt, period } = req.body;
+
+  if (!userId) return res.status(400).json({ error: 'Falta userId' });
+  if (!foodName || typeof foodName !== 'string') {
+    return res.status(400).json({ error: 'foodName inválido o vacío' });
+  }
+  if (typeof grams !== 'number' || grams <= 0) {
+    return res.status(400).json({ error: 'grams debe ser un número mayor a 0' });
+  }
+
+  const allowedPeriods = ['desayuno', 'almuerzo', 'merienda', 'cena'];
+  let normalizedPeriod = null;
+
+  if (period) {
+    normalizedPeriod = period
+      .toLowerCase();
+
+    if (!allowedPeriods.includes(normalizedPeriod)) {
+      return res.status(400).json({
+        error: 'period inválido. Debe ser desayuno, almuerzo, merienda o cena'
+      });
     }
-    if (typeof grams !== 'number' || grams <= 0) {
-      return res.status(400).json({ error: 'grams debe ser un número mayor a 0' });
+  }
+
+  try {
+    const foodResult = await pool.query(
+      'SELECT id, calories_per_100g FROM foods WHERE LOWER(name) = LOWER($1) LIMIT 1',
+      [foodName.trim()]
+    );
+
+    if (foodResult.rows.length === 0) {
+      return res.status(404).json({ error: 'El alimento no existe' });
     }
-  
-    try {
-      const foodResult = await pool.query(
-        'SELECT id, calories_per_100g FROM foods WHERE LOWER(name) = LOWER($1) LIMIT 1',
-        [foodName.trim()]
-      );
-  
-      if (foodResult.rows.length === 0) {
-        return res.status(404).json({ error: 'El alimento no existe' });
-      }
-  
-      const { id: foodId, calories_per_100g } = foodResult.rows[0];
-      const calories = calories_per_100g ? (grams * calories_per_100g) / 100 : null;
-  
-      const insertResult = await pool.query(
-        `INSERT INTO user_food_entries (user_id, food_id, grams, calories, consumed_at)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING *`,
-        [userId, foodId, grams, calories, consumedAt || new Date()]
-      );
-  
-      res.status(201).json({ message: 'Comida registrada', entry: toCamelCase(insertResult.rows[0]) });
-  
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error al registrar la comida' });
-    }
+
+    const { id: foodId, calories_per_100g } = foodResult.rows[0];
+    const calories = calories_per_100g ? (grams * calories_per_100g) / 100 : null;
+
+    const insertResult = await pool.query(
+      `INSERT INTO user_food_entries (user_id, food_id, grams, calories, consumed_at, period)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [userId, foodId, grams, calories, consumedAt || new Date(), normalizedPeriod]
+    );
+
+    res.status(201).json({
+      message: 'Comida registrada',
+      entry: toCamelCase(insertResult.rows[0])
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al registrar la comida' });
+  }
 }
 
 // Agregar comida
@@ -119,6 +136,7 @@ async function getUsersConsumedFoods(req, res) {
           ufe.grams, 
           ufe.calories, 
           ufe.consumed_at, 
+          ufe.period,
           f.id AS food_id,
           f.name AS food_name
        FROM user_food_entries ufe
@@ -151,7 +169,7 @@ async function getUsersConsumedFoods(req, res) {
           nutrientId: row.nutrient_id,
           name: row.name,
           unit: row.unit,
-          amount: null, // lo llenamos abajo con proporción según grams consumidos
+          amount: null,
           per100g: Number(row.amount_per_100g)
         });
       }
@@ -172,6 +190,7 @@ async function getUsersConsumedFoods(req, res) {
     });
 
     res.json({ entries: enriched });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al obtener comidas del usuario' });
@@ -309,42 +328,44 @@ async function getFoods(req, res) {
 }
 
 //  Lista de comidas consumidas desde el último lunes
-async function getUsersConsumedFoodsThisWeek(req,res) {
+async function getUsersConsumedFoodsThisWeek(req, res) {
   const { userId } = req.query;
+
   if (!userId) {
     return res.status(400).json({ error: 'Falta userId en la query' });
   }
 
   const now = new Date();
-  const todayDay      = now.getDay();                  // 0 = domingo … 1 = lunes … 6 = sábado
-  const daysMonday    = (todayDay + 6) % 7;            // desplazamiento para llegar al lunes
-  const lastMonday    = new Date(now);
+  const todayDay   = now.getDay();
+  const daysMonday = (todayDay + 6) % 7;
+  const lastMonday = new Date(now);
   lastMonday.setDate(now.getDate() - daysMonday);
-  lastMonday.setHours(0,0,0,0);
-  const mondayStr     = lastMonday.toISOString().slice(0,10);
+  lastMonday.setHours(0, 0, 0, 0);
+  const mondayStr = lastMonday.toISOString().slice(0, 10);
 
   try {
     const { rows } = await pool.query(
-      `SELECT f.name    AS foodName,
-              e.calories AS calories,
-              e.consumed_at
-         FROM user_food_entries e
-    INNER JOIN foods               f ON e.food_id = f.id
-        WHERE e.user_id   = $1
-          AND e.consumed_at >= $2::date`,
+      `SELECT 
+         f.name AS foodName,
+         e.calories,
+         e.consumed_at,
+         e.period
+       FROM user_food_entries e
+       INNER JOIN foods f ON e.food_id = f.id
+       WHERE e.user_id = $1
+         AND e.consumed_at >= $2::date`,
       [userId, mondayStr]
     );
 
     return res.json({
-      since:   mondayStr,
-      until:   now.toISOString(),
+      since: mondayStr,
+      until: now.toISOString(),
       entries: rows
     });
+
   } catch (err) {
     console.error(err);
-    return res
-      .status(500)
-      .json({ error: 'Error al obtener comidas desde el último lunes' });
+    return res.status(500).json({ error: 'Error al obtener comidas desde el último lunes' });
   }
 }
 
@@ -372,4 +393,4 @@ module.exports = {
         getFoods, 
         getUsersConsumedFoodsThisWeek, 
         getAllNutrients 
-      };
+};

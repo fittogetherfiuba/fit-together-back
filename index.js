@@ -31,6 +31,7 @@ const goalsRoutes      = require('./routes/goals');
 const loginRoutes      = require('./routes/login');
 const registerRoutes   = require('./routes/register');
 const recipesRoutes   = require('./routes/recipes');
+const friendsRoutes   = require('./routes/friends');
 
 const app = express();
 app.use(cors());
@@ -44,11 +45,11 @@ app.use('/api/goals',      goalsRoutes);
 app.use('/api/login',      loginRoutes);
 app.use('/api/register',   registerRoutes);
 app.use('/api/recipes',     recipesRoutes)
+app.use('/api/friends',   friendsRoutes);
 
 app.get('/api/ping', (req, res) => {
     res.json({ message: 'pong' });
 });
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

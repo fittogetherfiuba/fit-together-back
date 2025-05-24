@@ -36,7 +36,8 @@ curl --location --request POST 'http://localhost:3000/api/foods/entry' \
   "userId": 1,
   "foodName": "Manzana",
   "grams": 150,
-  "consumedAt": "2025-05-15"
+  "consumedAt": "2025-05-15",
+  "period": "Desayun"
 }'
 ```
 

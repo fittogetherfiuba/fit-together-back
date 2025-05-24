@@ -45,7 +45,8 @@ CREATE TABLE user_food_entries (
     food_id INTEGER REFERENCES foods(id),
     grams NUMERIC NOT NULL CHECK (grams > 0),
     calories NUMERIC,  -- se calculará al insertar: (grams * calories_per_100g) / 100
-    consumed_at DATE NOT NULL DEFAULT CURRENT_DATE
+    consumed_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    period TEXT CHECK (period IN ('desayuno', 'almuerzo', 'merienda', 'cena'))
 );
 
 -- Actividades disponibles (como "Correr", "Bicicleta", "Levantamiento de pesas", etc.)
@@ -260,3 +261,20 @@ CREATE TABLE food_nutrients (
   PRIMARY KEY (food_id, nutrient_id)
 );
 
+CREATE TABLE friend_requests (
+                                 id SERIAL PRIMARY KEY,
+                                 sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                                 receiver_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                 CONSTRAINT unique_request UNIQUE (sender_id, receiver_id),
+                                 CHECK (sender_id <> receiver_id)
+);
+
+CREATE TABLE user_friends (
+                              id SERIAL PRIMARY KEY,
+                              user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                              friend_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                              CONSTRAINT unique_friendship UNIQUE (user_id, friend_id),
+                              CHECK (user_id <> friend_id)
+);
