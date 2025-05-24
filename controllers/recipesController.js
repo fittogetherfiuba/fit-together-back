@@ -46,70 +46,70 @@ async function getRecipeNutrientsFromItems(items) {
   }));
 }
 
-// ✅ Crear una receta con ítems y nutrientes calculados
+// Crear una receta con ítems y nutrientes calculados
 async function createRecipe(req, res) {
-  const { userId, name, items, calories } = req.body;
-
-  if (!userId || !name || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'Faltan datos: userId, name o items' });
-  }
-
-  try {
-    const foodIds = items.map(i => i.foodId);
-
-    const { rows: foodsData } = await pool.query(
-      `SELECT id, calories_per_100g FROM foods WHERE id = ANY($1::int[])`,
-      [foodIds]
-    );
-
-    const foodMap = {};
-    for (const food of foodsData) {
-      foodMap[food.id] = food;
+    const { userId, name, items, calories, steps } = req.body;
+  
+    if (!userId || !name || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Faltan datos: userId, name o items' });
     }
-
-    let totalCalories = calories;
-    if (typeof totalCalories !== 'number') {
-      totalCalories = 0;
-      for (const item of items) {
-        const food = foodMap[item.foodId];
-        if (!food) {
-          return res.status(400).json({ error: `Alimento con id ${item.foodId} no existe` });
+  
+    try {
+      const foodIds = items.map(i => i.foodId);
+  
+      const { rows: foodsData } = await pool.query(
+        `SELECT id, calories_per_100g FROM foods WHERE id = ANY($1::int[])`,
+        [foodIds]
+      );
+  
+      const foodMap = {};
+      for (const food of foodsData) {
+        foodMap[food.id] = food;
+      }
+  
+      let totalCalories = calories;
+      if (typeof totalCalories !== 'number') {
+        totalCalories = 0;
+        for (const item of items) {
+          const food = foodMap[item.foodId];
+          if (!food) {
+            return res.status(400).json({ error: `Alimento con id ${item.foodId} no existe` });
+          }
+          const calsPer100 = food.calories_per_100g || 0;
+          totalCalories += (item.grams * calsPer100) / 100;
         }
-        const calsPer100 = food.calories_per_100g || 0;
-        totalCalories += (item.grams * calsPer100) / 100;
       }
+  
+      const { rows: recipeRows } = await pool.query(
+        `INSERT INTO recipes (name, user_id, total_calories, steps)
+         VALUES ($1, $2, $3, $4) RETURNING *`,
+        [name.trim(), userId, totalCalories, steps || null]
+      );
+      const recipeId = recipeRows[0].id;
+  
+      const insertItems = items.map(item =>
+        pool.query(
+          `INSERT INTO recipe_items (recipe_id, food_id, grams)
+           VALUES ($1, $2, $3)`,
+          [recipeId, item.foodId, item.grams]
+        )
+      );
+      await Promise.all(insertItems);
+  
+      const nutrients = await getRecipeNutrientsFromItems(items);
+  
+      res.status(201).json({
+        message: 'Receta creada',
+        recipe: {
+          ...toCamelCase(recipeRows[0]),
+          nutrients
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al crear receta' });
     }
-
-    const { rows: recipeRows } = await pool.query(
-      `INSERT INTO recipes (name, user_id, total_calories)
-       VALUES ($1, $2, $3) RETURNING *`,
-      [name.trim(), userId, totalCalories]
-    );
-    const recipeId = recipeRows[0].id;
-
-    const insertItems = items.map(item =>
-      pool.query(
-        `INSERT INTO recipe_items (recipe_id, food_id, grams)
-         VALUES ($1, $2, $3)`,
-        [recipeId, item.foodId, item.grams]
-      )
-    );
-    await Promise.all(insertItems);
-
-    const nutrients = await getRecipeNutrientsFromItems(items);
-
-    res.status(201).json({
-      message: 'Receta creada',
-      recipe: {
-        ...toCamelCase(recipeRows[0]),
-        nutrients
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al crear receta' });
-  }
-}
+  }  
 
 // Obtener todas las recetas con ítems y nutrientes
 async function getRecipes(req, res) {
@@ -117,7 +117,7 @@ async function getRecipes(req, res) {
   
     try {
       const queryBase = `
-        SELECT r.id, r.name, r.user_id, r.total_calories, r.created_at
+        SELECT r.id, r.name, r.user_id, r.total_calories, r.steps, r.created_at
         FROM recipes r
         ${userId ? 'WHERE r.user_id = $1' : ''}
         ORDER BY r.created_at DESC
@@ -158,6 +158,7 @@ async function getRecipes(req, res) {
           name: recipe.name,
           userId: recipe.user_id,
           totalCalories: Number(recipe.total_calories),
+          steps: recipe.steps,
           createdAt: recipe.created_at,
           items,
           nutrients
@@ -170,6 +171,7 @@ async function getRecipes(req, res) {
       res.status(500).json({ error: 'Error al obtener recetas' });
     }
   }
+  
 
 
 module.exports = { createRecipe, getRecipes };

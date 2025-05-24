@@ -91,13 +91,14 @@ curl --location 'http://localhost:3000/api/foods/nutrients'
 curl --location 'http://localhost:3000/api/recipes/create' \
 --header 'Content-Type: application/json' \
 --data '{
-    "userId": 1,
-    "name": "Tostadas con Palta",
-    "items": [
-      { "foodId": 6, "grams": 60 },
-      { "foodId": 2, "grams": 100 }
-    ]
-  }'
+  "userId": 1,
+  "name": "Tostadas con Palta",
+  "items": [
+    { "foodId": 6, "grams": 60 },
+    { "foodId": 2, "grams": 100 }
+  ],
+  "steps": "1. Tostar el pan integral.\n2. Pisar la palta.\n3. Untar la palta sobre las tostadas y servir."
+}'
 ```
 
 ## Obtener recetas

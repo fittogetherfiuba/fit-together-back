@@ -73,6 +73,7 @@ CREATE TABLE recipes (
   name TEXT NOT NULL,
   user_id INTEGER REFERENCES users(id),
   total_calories NUMERIC,
+  steps TEXT,  -- 🆕 Instrucciones o pasos opcionales
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -81,6 +82,28 @@ CREATE TABLE recipe_items (
   recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
   food_id INTEGER REFERENCES foods(id),
   grams NUMERIC NOT NULL
+);
+
+
+CREATE TABLE nutrients (
+  id SERIAL PRIMARY KEY,
+  slug TEXT NOT NULL UNIQUE,  
+  name TEXT NOT NULL,
+  unit TEXT NOT NULL
+);
+
+INSERT INTO nutrients (slug, name, unit) VALUES
+  ('protein', 'Proteínas', 'g'),
+  ('fat', 'Grasas', 'g'),
+  ('carbohydrates', 'Carbohidratos', 'g'),
+  ('fiber', 'Fibras', 'g'),
+  ('sodium', 'Sodio', 'mg');
+
+CREATE TABLE food_nutrients (
+  food_id INTEGER REFERENCES foods(id) ON DELETE CASCADE,
+  nutrient_id INTEGER REFERENCES nutrients(id) ON DELETE CASCADE,
+  amount_per_100g NUMERIC NOT NULL,
+  PRIMARY KEY (food_id, nutrient_id)
 );
 
 INSERT INTO foods (name, created_by_user_id, calories_per_100g) VALUES
@@ -220,7 +243,6 @@ INSERT INTO food_nutrients (food_id, nutrient_id, amount_per_100g) VALUES
 (15, 4, 10.6),
 (15, 5, 2);
 
-
 INSERT INTO activities (name, created_by_user_id) VALUES
 ('Caminar', NULL),
 ('Correr', NULL),
@@ -238,27 +260,6 @@ CREATE TABLE water_entries (
     user_id INTEGER REFERENCES users(id),
     liters NUMERIC NOT NULL CHECK (liters > 0),
     consumed_at DATE NOT NULL DEFAULT CURRENT_DATE
-);
-
-CREATE TABLE nutrients (
-  id SERIAL PRIMARY KEY,
-  slug TEXT NOT NULL UNIQUE,  
-  name TEXT NOT NULL,
-  unit TEXT NOT NULL
-);
-
-INSERT INTO nutrients (slug, name, unit) VALUES
-  ('protein', 'Proteínas', 'g'),
-  ('fat', 'Grasas', 'g'),
-  ('carbohydrates', 'Carbohidratos', 'g'),
-  ('fiber', 'Fibras', 'g'),
-  ('sodium', 'Sodio', 'mg');
-
-CREATE TABLE food_nutrients (
-  food_id INTEGER REFERENCES foods(id) ON DELETE CASCADE,
-  nutrient_id INTEGER REFERENCES nutrients(id) ON DELETE CASCADE,
-  amount_per_100g NUMERIC NOT NULL,
-  PRIMARY KEY (food_id, nutrient_id)
 );
 
 CREATE TABLE friend_requests (
