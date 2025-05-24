@@ -1,4 +1,6 @@
 const pool = require('../db');
+const bcrypt = require('bcrypt');
+
 
 // LOGIN
 async function loginUser (req,res) {
