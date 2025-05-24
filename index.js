@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
 require('dotenv').config();
+const bcrypt = require('bcrypt');
 const { toCamelCase } = require('./utils');
 
 function getFormattedDate() {
