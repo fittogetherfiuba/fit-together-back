@@ -344,12 +344,15 @@ async function getUsersConsumedFoodsThisWeek(req, res) {
   const mondayStr = lastMonday.toISOString().slice(0, 10);
 
   try {
-    const { rows } = await pool.query(
+    const result = await pool.query(
       `SELECT 
-         f.name AS foodName,
-         e.calories,
-         e.consumed_at,
-         e.period
+        e.id, 
+        e.grams, 
+        e.calories, 
+        e.consumed_at, 
+        e.period,
+        f.id AS food_id,
+        f.name AS food_name
        FROM user_food_entries e
        INNER JOIN foods f ON e.food_id = f.id
        WHERE e.user_id = $1
@@ -357,11 +360,49 @@ async function getUsersConsumedFoodsThisWeek(req, res) {
       [userId, mondayStr]
     );
 
-    return res.json({
-      since: mondayStr,
-      until: now.toISOString(),
-      entries: rows
+    const entries = result.rows;
+    const foodIds = [...new Set(entries.map(e => e.food_id))];
+
+    let nutrientsMap = {};
+
+    if (foodIds.length > 0) {
+      const nutrientsResult = await pool.query(`
+        SELECT fn.food_id,
+               n.id AS nutrient_id,
+               n.name,
+               n.unit,
+               fn.amount_per_100g
+        FROM food_nutrients fn
+        JOIN nutrients n ON fn.nutrient_id = n.id
+        WHERE fn.food_id = ANY($1::int[])
+      `, [foodIds]);
+      for (const row of nutrientsResult.rows) {
+        if (!nutrientsMap[row.food_id]) nutrientsMap[row.food_id] = [];
+        nutrientsMap[row.food_id].push({
+          nutrientId: row.nutrient_id,
+          name: row.name,
+          unit: row.unit,
+          amount: null,
+          per100g: Number(row.amount_per_100g)
+        });
+      }
+    }
+
+    const enriched = entries.map(entry => {
+      const nutrients = (nutrientsMap[entry.food_id] || []).map(n => ({
+        nutrientId: n.nutrientId,
+        name: n.name,
+        unit: n.unit,
+        amount: Number((entry.grams * n.per100g) / 100)
+      }));
+
+      return {
+        ...toCamelCase(entry),
+        nutrients
+      };
     });
+
+  res.json({ entries: enriched });
 
   } catch (err) {
     console.error(err);
