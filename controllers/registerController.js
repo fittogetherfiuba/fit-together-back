@@ -18,11 +18,12 @@ async function registerUser (req, res) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const result = await pool.query(
-            'INSERT INTO users (email, password, username, fullname, registrationDay) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            'INSERT INTO users (email, password, username, fullname, registrationDay) VALUES ($1, $2, $3, $4, $5) RETURNING id, username',
             [email, hashedPassword, username, fullname, getFormattedDate()]
         );
 
         const user = result.rows[0];
+        console.log(user)
         res.status(201).json({ username: user.username, userId: user.id });
     } catch (err) {
         if (err.code === '23505') {

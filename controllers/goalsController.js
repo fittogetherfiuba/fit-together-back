@@ -47,6 +47,7 @@ const { toCamelCase } = require('../utils');
 
 // Obtener objetivos
 async function getGoals (req, res) {
+    console.log(req.params)
     const { userId } = req.params;
     const type = req.query.type?.toLowerCase(); // <- esto solo
 
