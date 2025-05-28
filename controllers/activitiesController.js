@@ -78,6 +78,28 @@ async function getActivities (req,res){
     }
 }
 
+async function getTypeCativities (req,res){
+  const{ type } = req.query;
+  if (!type){
+    return res.status(400).json({error : 'Falta tipo de actividad'});
+  }
+  type.toString()
+
+  try {
+    const {result} = await pool.query(
+    'SELECT * FROM activities',
+    [type]
+  );
+  console.log(type)
+  console.log(result)
+  res.json({activities: result});
+
+  } catch(err) {        
+    console.error(err);
+    return res.status(500).json({ error: 'Error al obtener actividades' });
+  }
+}
+
 // Actividades realizadas por el usuario desde ultimo dia hata dia acual
 async function getDoneActivitiesThisWeek (req,res) {
   const { userId } = req.query;
@@ -136,4 +158,4 @@ async function getDoneActivitiesThisWeek (req,res) {
   }
 }
 
-module.exports = { getDoneActivities , addDoneActivity , getActivities, getDoneActivitiesThisWeek};
+module.exports = { getDoneActivities , addDoneActivity , getActivities, getTypeCativities ,getDoneActivitiesThisWeek};

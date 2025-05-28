@@ -54,7 +54,7 @@ CREATE TABLE activities (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL,
     created_by_user_id INTEGER REFERENCES users(id),
-    type TEXT UNIQUE NOT NULL
+    type TEXT NOT NULL
 );
 
 -- Entradas de actividades realizadas por usuario
