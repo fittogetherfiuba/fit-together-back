@@ -46,7 +46,7 @@ async function addDoneActivity (req,res) {
         const insertRes = await pool.query(
             `INSERT INTO user_activity_entries 
             (user_id, activity_id, duration_minutes, distance_km, series, repetitions, performed_at, calories_burned)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING *`,
             [
                 userId,
