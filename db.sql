@@ -65,7 +65,8 @@ CREATE TABLE user_activity_entries (
     distance_km REAL,
     series INTEGER,
     repetitions INTEGER,
-    performed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    performed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    calories_burned NUMERIC
 );
 
 CREATE TABLE recipes (
@@ -99,12 +100,12 @@ INSERT INTO nutrients (slug, name, unit) VALUES
   ('fiber', 'Fibras', 'g'),
   ('sodium', 'Sodio', 'mg');
 
-CREATE TABLE food_nutrients (
-  food_id INTEGER REFERENCES foods(id) ON DELETE CASCADE,
-  nutrient_id INTEGER REFERENCES nutrients(id) ON DELETE CASCADE,
-  amount_per_100g NUMERIC NOT NULL,
-  PRIMARY KEY (food_id, nutrient_id)
-);
+    CREATE TABLE food_nutrients (
+      food_id INTEGER REFERENCES foods(id) ON DELETE CASCADE,
+      nutrient_id INTEGER REFERENCES nutrients(id) ON DELETE CASCADE,
+      amount_per_100g NUMERIC NOT NULL,
+      PRIMARY KEY (food_id, nutrient_id)
+    );
 
 INSERT INTO foods (name, created_by_user_id, calories_per_100g) VALUES
 ('Manzana', NULL, 52),
