@@ -94,7 +94,7 @@ CREATE TABLE nutrients (
 );
 
 INSERT INTO nutrients (slug, name, unit) VALUES
-  ('protein', 'Proteínas', 'g'),
+  ('protein', 'Proteinas', 'g'),
   ('fat', 'Grasas', 'g'),
   ('carbohydrates', 'Carbohidratos', 'g'),
   ('fiber', 'Fibras', 'g'),
