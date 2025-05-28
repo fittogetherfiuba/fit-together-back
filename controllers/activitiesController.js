@@ -180,10 +180,6 @@ async function estimateCaloriesBurned(req, res) {
         console.error(err);
         res.status(500).json({ error: 'Error al estimar calorías' });
     }
-    //agregar ALTER TABLE activities ADD COLUMN calories_burn_rate NUMERIC;
-    //UPDATE activities SET category = 'cardio', calories_burn_rate = 10 WHERE name = 'Correr';
-    //UPDATE activities SET category = 'musculacion', calories_burn_rate = 0.5 WHERE name = 'Flexiones';
-
 }
 
 

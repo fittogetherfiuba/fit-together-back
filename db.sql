@@ -54,7 +54,8 @@ CREATE TABLE activities (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL,
     created_by_user_id INTEGER REFERENCES users(id),
-    type TEXT UNIQUE NOT NULL
+    type TEXT NOT NULL,
+    calories_burn_rate NUMERIC
 );
 
 -- Entradas de actividades realizadas por usuario
@@ -245,17 +246,17 @@ INSERT INTO food_nutrients (food_id, nutrient_id, amount_per_100g) VALUES
 (15, 4, 10.6),
 (15, 5, 2);
 
-INSERT INTO activities (name, created_by_user_id, type) VALUES
-('Caminar', NULL, 'cardio'),
-('Correr', NULL, 'cardio'),
-('Nadar', NULL, 'cardio'),
-('Bicicleta', NULL, 'cardio'),
-('Sentadillas', NULL, 'musculacion'),
-('Flexiones', NULL, 'musculacion'),
-('Plancha', NULL, 'musculacion'),
-('Burpees', NULL, 'cardio'),
-('Abdominales', NULL, 'musculacion'),
-('Yoga', NULL, 'cardio');
+INSERT INTO activities (name, created_by_user_id, type, calories_burn_rate) VALUES
+('Caminar', NULL, 'cardio', 12),
+('Correr', NULL, 'cardio', 20),
+('Nadar', NULL, 'cardio', 14),
+('Bicicleta', NULL, 'cardio', 16),
+('Sentadillas', NULL, 'musculacion', 3),
+('Flexiones', NULL, 'musculacion', 4),
+('Plancha', NULL, 'musculacion', 6),
+('Burpees', NULL, 'cardio', 7),
+('Abdominales', NULL, 'musculacion', 3),
+('Yoga', NULL, 'cardio', 1);
 
 CREATE TABLE water_entries (
     id SERIAL PRIMARY KEY,
