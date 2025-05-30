@@ -9,26 +9,26 @@ async function getAllUsers(req,res) {
         res.status(500).json({ error: 'Database error' });
     }
 }
-
-async function updateUser  (req, res) {
+async function updateUser(req, res) {
     const { username } = req.params;
-    const { fullname, birthday, weight, height, description } = req.body;
+    const { fullname, birthday, weight, height, description, imageUrl } = req.body;
 
     try {
         const result = await pool.query(
             `
-                UPDATE users
-                SET
-                    fullname = $1,
-                    birthday = $2,
-                    weight = $3,
-                    height = $4,
-                    description = $5
-                WHERE username = $6
-                    RETURNING 
-        id, username, fullname, email, birthday, weight, height, description;
+            UPDATE users
+            SET
+                fullname = $1,
+                birthday = $2,
+                weight = $3,
+                height = $4,
+                description = $5,
+                image_url = $6
+            WHERE username = $7
+            RETURNING 
+                id, username, fullname, email, birthday, weight, height, description, image_url;
             `,
-            [fullname, birthday, weight, height, description, username]
+            [fullname, birthday, weight, height, description, imageUrl, username]
         );
 
         if (result.rows.length === 0) {
@@ -43,23 +43,24 @@ async function updateUser  (req, res) {
     }
 }
 
-async function getUserByUsername (req, res) {
+async function getUserByUsername(req, res) {
     const { username } = req.params;
 
     try {
         const result = await pool.query(
-            `SELECT 
-         id,
-         username,
-         fullname,
-         email,
-         birthday,
-         weight,
-         height,
-         description, 
-         registrationDay
-       FROM users
-       WHERE username = $1`,
+            `SELECT
+                 id,
+                 username,
+                 fullname,
+                 email,
+                 birthday,
+                 weight,
+                 height,
+                 description,
+                 registrationDay,
+                 image_url
+             FROM users
+             WHERE username = $1`,
             [username]
         );
 
@@ -74,5 +75,6 @@ async function getUserByUsername (req, res) {
         res.status(500).json({ error: 'Error al obtener usuario' });
     }
 }
+
 
 module.exports = { getAllUsers, getUserByUsername, updateUser };

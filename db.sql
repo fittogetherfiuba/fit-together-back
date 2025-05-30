@@ -12,7 +12,10 @@ CREATE TABLE users (
                        registrationDay TEXT,
                        weight NUMERIC,
                        height NUMERIC,
-                       description TEXT
+                       description TEXT,
+                       image_url TEXT
+
+
 );
 
 CREATE TABLE user_goals (
