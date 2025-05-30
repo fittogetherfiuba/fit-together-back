@@ -11,7 +11,7 @@ async function getAllUsers(req,res) {
 }
 async function updateUser(req, res) {
     const { username } = req.params;
-    const { fullname, birthday, weight, height, description, imageUrl } = req.body;
+    const { fullname, birthday, weight, height, description, image_url } = req.body;
 
     try {
         const result = await pool.query(
@@ -28,7 +28,7 @@ async function updateUser(req, res) {
             RETURNING 
                 id, username, fullname, email, birthday, weight, height, description, image_url;
             `,
-            [fullname, birthday, weight, height, description, imageUrl, username]
+            [fullname, birthday, weight, height, description, image_url, username]
         );
 
         if (result.rows.length === 0) {
