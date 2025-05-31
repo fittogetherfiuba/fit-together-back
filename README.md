@@ -6,6 +6,24 @@ Este archivo contiene ejemplos listos para probar los endpoints.
 
 ---
 
+## Registro
+```bash
+curl --location 'http://localhost:3000/api/register' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "email": "test@gmail.com",
+    "password": "12345678",
+    "username": "testest",
+    "fullname": "test test"
+  }'
+```
+
+## Obtener datos de usuario
+
+```bash
+curl -X GET http://localhost:3000/api/users/nombredeusuario
+```
+
 ## Establecer objetivo
 
 Actualmente se permiten los siguientes tipos de objetivo:
@@ -105,3 +123,14 @@ curl --location 'http://localhost:3000/api/recipes/create' \
 ```bash
 curl -X GET "http://localhost:3000/api/recipes/get?userId=1"
 ```
+
+## Verificar usuario
+```bash
+curl --location 'http://localhost:3000/api/users/verify' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "email": "sebastianpagura@gmail.com",
+    "code": "766406"
+  }'
+```
+Tambien soporta username o userId.

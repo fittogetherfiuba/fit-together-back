@@ -3,17 +3,20 @@ CREATE USER test WITH PASSWORD 'test';
 CREATE DATABASE fittogether OWNER test;
 
 CREATE TABLE users (
-                       id SERIAL PRIMARY KEY,
-                       email TEXT UNIQUE NOT NULL,
-                       username TEXT UNIQUE NOT NULL,
-                       password TEXT NOT NULL,
-                       fullname TEXT,
-                       birthday DATE,
-                       registrationDay TEXT,
-                       weight NUMERIC,
-                       height NUMERIC,
-                       description TEXT
+    id SERIAL PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    fullname TEXT,
+    birthday DATE,
+    registrationDay TEXT,
+    weight NUMERIC,
+    height NUMERIC,
+    description TEXT,
+    verified BOOLEAN DEFAULT FALSE,
+    verification_code TEXT
 );
+
 
 CREATE TABLE user_goals (
     id SERIAL PRIMARY KEY,
