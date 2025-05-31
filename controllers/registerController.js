@@ -1,6 +1,6 @@
 const pool = require('../db');
 const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer');
+const { sendVerificationEmail } = require('../utils');
 
 function getFormattedDate() {
     const date = new Date()
@@ -44,25 +44,5 @@ async function registerUser (req, res) {
 function generateVerificationCode() {
     return Math.floor(100000 + Math.random() * 900000).toString(); // 6 dígitos
 }
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'fittogetherfiuba@gmail.com',
-      pass: 'nbaeukxesrzoippc'
-    }
-  });
-  
-async function sendVerificationEmail(to, code) {
-    await transporter.sendMail({
-      from: '"FitTogether" <tu-email@gmail.com>',
-      to,
-      subject: 'Tu código de verificación',
-      html: `
-        <p>Hola,</p>
-        <p>Tu código para verificar tu cuenta es: <strong>${code}</strong></p>
-      `
-    });
-  }
 
 module.exports = {registerUser, sendVerificationEmail};

@@ -1,4 +1,5 @@
 const pool = require('../db');
+const { sendVerificationEmail } = require('../utils');
 
 async function getAllUsers(req, res) {
     try {
@@ -140,4 +141,62 @@ async function verifyUser(req, res) {
     }
 }
 
-module.exports = { getAllUsers, getUserByUsername, updateUser, verifyUser };
+async function resendVerificationCode(req, res) {
+    const { userId, email, username } = req.body;
+
+    if (!userId && !email && !username) {
+        return res.status(400).json({ error: 'Debes enviar userId, email o username' });
+    }
+
+    try {
+        const conditions = [];
+        const values = [];
+
+        if (userId) {
+            conditions.push('id = $' + (values.length + 1));
+            values.push(userId);
+        }
+        if (email) {
+            conditions.push('email = $' + (values.length + 1));
+            values.push(email);
+        }
+        if (username) {
+            conditions.push('username = $' + (values.length + 1));
+            values.push(username);
+        }
+
+        const whereClause = conditions.join(' OR ');
+
+        const result = await pool.query(
+            `SELECT id, email, username, verified FROM users WHERE ${whereClause} LIMIT 1`,
+            values
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        const user = result.rows[0];
+
+        if (user.verified) {
+            return res.status(400).json({ error: 'La cuenta ya está verificada' });
+        }
+
+        const code = Math.floor(100000 + Math.random() * 900000); // 6 dígitos
+
+        await pool.query(
+            `UPDATE users SET verification_code = $1 WHERE id = $2`,
+            [code, user.id]
+        );
+
+        await sendVerificationEmail(user.email, code, user.username);
+
+        res.json({ message: 'Código de verificación reenviado con éxito' });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al reenviar el código de verificación' });
+    }
+}
+
+module.exports = { getAllUsers, getUserByUsername, updateUser, verifyUser, resendVerificationCode };

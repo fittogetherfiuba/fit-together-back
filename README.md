@@ -134,3 +134,10 @@ curl --location 'http://localhost:3000/api/users/verify' \
   }'
 ```
 Tambien soporta username o userId.
+
+## Reenviar mail de verificacion
+```bash
+curl --location 'http://localhost:3000/api/users/resend-verification-code' \
+--header 'Content-Type: application/json' \
+--data '{"userId": 1}'
+```
