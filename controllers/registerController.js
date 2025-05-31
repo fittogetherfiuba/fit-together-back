@@ -1,5 +1,6 @@
 const pool = require('../db');
 const bcrypt = require('bcrypt');
+const { sendVerificationEmail } = require('../utils');
 
 function getFormattedDate() {
     const date = new Date()
@@ -16,13 +17,18 @@ async function registerUser (req, res) {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
+        const code = generateVerificationCode();
 
         const result = await pool.query(
-            'INSERT INTO users (email, password, username, fullname, registrationDay) VALUES ($1, $2, $3, $4, $5) RETURNING id, username',
-            [email, hashedPassword, username, fullname, getFormattedDate()]
+            `INSERT INTO users (email, password, username, fullname, registrationDay, verified, verification_code)
+             VALUES ($1, $2, $3, $4, $5, false, $6)
+             RETURNING id, username, email`,
+            [email, hashedPassword, username, fullname, getFormattedDate(), code]
         );
 
         const user = result.rows[0];
+        await sendVerificationEmail(user.email, code);
+
         console.log(user)
         res.status(201).json({ username: user.username, userId: user.id });
     } catch (err) {
@@ -35,4 +41,8 @@ async function registerUser (req, res) {
     }
 }
 
-module.exports = {registerUser};
+function generateVerificationCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // 6 dígitos
+}
+
+module.exports = {registerUser, sendVerificationEmail};
