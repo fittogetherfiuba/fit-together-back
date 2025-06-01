@@ -1,3 +1,4 @@
+const nodemailer = require('nodemailer');
 
 function toCamelCase(obj) {
     if (Array.isArray(obj)) {
@@ -25,4 +26,25 @@ function toCamelCase(obj) {
     return obj;
   }
 
-  module.exports = { toCamelCase };
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'fittogetherfiuba@gmail.com',
+    pass: 'nbaeukxesrzoippc'
+  }
+});
+
+async function sendVerificationEmail(to, code) {
+  await transporter.sendMail({
+    from: '"FitTogether" <tu-email@gmail.com>',
+    to,
+    subject: 'Tu código de verificación',
+    html: `
+      <p>Hola,</p>
+      <p>Tu código para verificar tu cuenta es: <strong>${code}</strong></p>
+    `
+  });
+}
+
+  module.exports = { toCamelCase, sendVerificationEmail };

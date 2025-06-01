@@ -13,10 +13,11 @@ CREATE TABLE users (
                        weight NUMERIC,
                        height NUMERIC,
                        description TEXT,
-                       image_url TEXT
-
-
+                       image_url TEXT,
+                       verified BOOLEAN DEFAULT FALSE,
+                       verification_code TEXT
 );
+
 
 CREATE TABLE user_goals (
     id SERIAL PRIMARY KEY,
