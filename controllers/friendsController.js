@@ -19,7 +19,7 @@ async function getFriends (req, res) {
         const userId = await getUserIdByUsername(username);
 
         const { rows } = await pool.query(
-            `SELECT u.username, u.fullname, u.email
+            `SELECT u.username, u.fullname, u.email, u.image_url
        FROM user_friends f
        JOIN users u ON f.friend_id = u.id
        WHERE f.user_id = $1`,
@@ -65,7 +65,7 @@ async function getRequests (req, res) {
     try {
         const userId = await getUserIdByUsername(req.params.username);
         const { rows } = await pool.query(
-            `SELECT u.username, u.fullname
+            `SELECT u.username, u.fullname, u.image_url
        FROM friend_requests fr
        JOIN users u ON fr.sender_id = u.id
        WHERE fr.receiver_id = $1`,
