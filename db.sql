@@ -285,3 +285,10 @@ CREATE TABLE user_friends (
                               CONSTRAINT unique_friendship UNIQUE (user_id, friend_id),
                               CHECK (user_id <> friend_id)
 );
+
+CREATE TABLE communities (
+                             id SERIAL PRIMARY KEY,
+                             user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                             name TEXT NOT NULL UNIQUE,
+                             description TEXT
+);
