@@ -20,9 +20,7 @@ async function registerUser (req, res) {
         const code = generateVerificationCode();
 
         const result = await pool.query(
-            'INSERT INTO users (email, password, username, fullname, registrationDay, image_url) 
-             VALUES ($1, $2, $3, $4, $5, $6) 
-             RETURNING id, username, email',
+            'INSERT INTO users (email, password, username, fullname, registrationDay, image_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, email',
             [email, hashedPassword, username, fullname, getFormattedDate(), 'https://i.postimg.cc/K8yZ8Mpn/user-icon-white-background.png']
         );
 
