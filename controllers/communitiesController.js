@@ -50,7 +50,7 @@ async function getCommunities(req, res) {
 
     try {
         const result = await pool.query(
-            `SELECT c.*, u.username AS creator_username
+            `SELECT cc.*, u.username AS creator_username, c.*
              FROM community_subscriptions c
                       JOIN users u ON c.user_id = u.id
                       JOIN communities cc ON c.community_id = cc.id WHERE u.id = $1
