@@ -38,10 +38,11 @@ async function getCommunities(req, res) {
     try {
         const result = await pool.query(
             `SELECT c.*, u.username AS creator_username
-             FROM communities c
+             FROM community_subscriptions c
                       JOIN users u ON c.user_id = u.id
-             WHERE c.user_id = $1
-             ORDER BY c.name ASC`,
+                      JOIN communities cc ON c.community_id = cc.id WHERE u.id = $1
+             ORDER BY cc.name ASC;
+            `,
             [userId]
         );
 
