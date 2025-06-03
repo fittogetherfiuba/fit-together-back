@@ -292,3 +292,9 @@ CREATE TABLE communities (
                              name TEXT NOT NULL UNIQUE,
                              description TEXT
 );
+CREATE TABLE community_subscriptions (
+                                           id SERIAL PRIMARY KEY,
+                                           user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                                           community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
+                                           UNIQUE(user_id, community_id)
+);

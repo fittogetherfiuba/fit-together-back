@@ -53,7 +53,50 @@ async function getCommunities(req, res) {
 }
 
 
+async function getAllCommunities(req, res) {
+    try {
+        const result = await pool.query(
+            `SELECT c.*, u.username AS creator_username
+             FROM communities c
+             JOIN users u ON c.user_id = u.id
+             ORDER BY c.name ASC`
+        );
+        res.json({ communities: toCamelCase(result.rows) });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener comunidades' });
+    }
+}
+
+async function subscribeToCommunity(req, res) {
+    const { userId, communityId } = req.body;
+
+    if (!userId || !communityId) {
+        return res.status(400).json({ error: 'Faltan userId o communityId' });
+    }
+
+    try {
+        await pool.query(
+            `INSERT INTO community_subscriptions (user_id, community_id)
+             VALUES ($1, $2)`,
+            [userId, communityId]
+        );
+        res.status(201).json({ message: 'Suscripción exitosa' });
+    } catch (err) {
+        console.error(err);
+
+        if (err.code === '23505') {
+            return res.status(409).json({ error: 'Ya estás suscripto a esta comunidad' });
+        }
+
+        res.status(500).json({ error: 'Error al suscribirse a la comunidad' });
+    }
+}
+
+
 module.exports = {
-        addCommunity,
-    getCommunities
+    addCommunity,
+    getCommunities,
+    getAllCommunities,
+    subscribeToCommunity
 };
