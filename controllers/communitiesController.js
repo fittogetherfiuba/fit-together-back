@@ -1,6 +1,7 @@
 const pool = require('../db');
 const { toCamelCase } = require('../utils');
 
+
 async function addCommunity(req, res) {
     const { userId, name, description } = req.body;
 
@@ -9,6 +10,7 @@ async function addCommunity(req, res) {
     }
 
     try {
+        // Crear comunidad
         const result = await pool.query(
             `INSERT INTO communities (user_id, name, description)
              VALUES ($1, $2, $3)
@@ -16,17 +18,28 @@ async function addCommunity(req, res) {
             [userId, name, description || null]
         );
 
-        res.status(201).json({ message: 'Comunidad creada', community: toCamelCase(result.rows[0]) });
+        const community = result.rows[0];
+
+        // Suscribir al creador automáticamente
+        await pool.query(
+            `INSERT INTO community_subscriptions (user_id, community_id)
+             VALUES ($1, $2)`,
+            [userId, community.id]
+        );
+
+        res.status(201).json({ message: 'Comunidad creada y suscripto automáticamente', community: toCamelCase(community) });
+
     } catch (err) {
         console.error(err);
 
         if (err.code === '23505') {
-            return res.status(409).json({ error: 'El nombre de comunidad ya existe' });
+            return res.status(409).json({ error: 'El nombre de comunidad ya existe o ya estás suscripto' });
         }
 
         res.status(500).json({ error: 'Error al crear comunidad' });
     }
 }
+
 
 async function getCommunities(req, res) {
     const { userId } = req.query;
