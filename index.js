@@ -32,6 +32,7 @@ const loginRoutes      = require('./routes/login');
 const registerRoutes   = require('./routes/register');
 const recipesRoutes   = require('./routes/recipes');
 const friendsRoutes   = require('./routes/friends');
+const communitiesRoutes   = require('./routes/communities');
 
 const app = express();
 app.use(cors());
@@ -46,6 +47,7 @@ app.use('/api/login',      loginRoutes);
 app.use('/api/register',   registerRoutes);
 app.use('/api/recipes',     recipesRoutes)
 app.use('/api/friends',   friendsRoutes);
+app.use('/api/communities',   communitiesRoutes);
 
 app.get('/api/ping', (req, res) => {
     res.json({ message: 'pong' });
