@@ -80,8 +80,9 @@ CREATE TABLE recipes (
   name TEXT NOT NULL,
   user_id INTEGER REFERENCES users(id),
   total_calories NUMERIC,
-  steps TEXT,  -- 🆕 Instrucciones o pasos opcionales
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  steps TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  pic TEXT
 );
 
 CREATE TABLE recipe_items (

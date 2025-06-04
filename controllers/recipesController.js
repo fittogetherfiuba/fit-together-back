@@ -48,7 +48,7 @@ async function getRecipeNutrientsFromItems(items) {
 
 // Crear una receta con ítems y nutrientes calculados
 async function createRecipe(req, res) {
-    const { userId, name, items, calories, steps } = req.body;
+  const { userId, name, items, calories, steps, pic } = req.body;
   
     if (!userId || !name || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Faltan datos: userId, name o items' });
@@ -79,12 +79,14 @@ async function createRecipe(req, res) {
           totalCalories += (item.grams * calsPer100) / 100;
         }
       }
-  
+
       const { rows: recipeRows } = await pool.query(
-        `INSERT INTO recipes (name, user_id, total_calories, steps)
-         VALUES ($1, $2, $3, $4) RETURNING *`,
-        [name.trim(), userId, totalCalories, steps || null]
+          `INSERT INTO recipes (name, user_id, total_calories, steps, pic)
+           VALUES ($1, $2, $3, $4, $5)
+             RETURNING *`,
+          [name.trim(), userId, totalCalories, steps || null, pic || null]
       );
+
       const recipeId = recipeRows[0].id;
   
       const insertItems = items.map(item =>
@@ -117,7 +119,7 @@ async function getRecipes(req, res) {
   
     try {
       const queryBase = `
-        SELECT r.id, r.name, r.user_id, r.total_calories, r.steps, r.created_at
+        SELECT r.id, r.name, r.user_id, r.total_calories, r.steps, r.created_at, r.pic
         FROM recipes r
         ${userId ? 'WHERE r.user_id = $1' : ''}
         ORDER BY r.created_at DESC
@@ -152,7 +154,7 @@ async function getRecipes(req, res) {
       const enriched = await Promise.all(recipes.map(async (recipe) => {
         const items = itemsByRecipe[recipe.id] || [];
         const nutrients = await getRecipeNutrientsFromItems(items);
-  
+
         return {
           id: recipe.id,
           name: recipe.name,
@@ -160,6 +162,7 @@ async function getRecipes(req, res) {
           totalCalories: Number(recipe.total_calories),
           steps: recipe.steps,
           createdAt: recipe.created_at,
+          pic: recipe.pic,
           items,
           nutrients
         };
