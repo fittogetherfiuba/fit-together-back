@@ -181,5 +181,20 @@ async function estimateCaloriesBurned(req, res) {
 }
 
 
+// Ver actividades disponibels
+async function getActivitiesByType (req,res){
+    const { type } = req.params;
+    console.log('query: ' + type)
+    try {
+        const result = await pool.query(
+            'SELECT * FROM activities WHERE LOWER(type) = LOWER($1) ORDER BY name ASC',
+            [type]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener actividades' });
+    }
+}
+
 module.exports = { getDoneActivities , addDoneActivity , getActivities, getDoneActivitiesThisWeek,
-    estimateCaloriesBurned};
+    estimateCaloriesBurned, getActivitiesByType};
