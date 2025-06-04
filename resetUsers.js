@@ -60,8 +60,8 @@ async function registerUser(email, username, password, fullname) {
   const { rows } = await pool.query(
     `
     WITH upsert AS (
-      INSERT INTO users (email, username, fullname, password, registrationDay)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO users (email, username, fullname, password, registrationDay, image_url)
+      VALUES ($1, $2, $3, $4, $5, $6)
       ON CONFLICT (email) DO NOTHING
       RETURNING id
     )
@@ -70,7 +70,7 @@ async function registerUser(email, username, password, fullname) {
     SELECT id FROM users WHERE email = $1
     LIMIT 1;
     `,
-    [email, username, fullname, hashedPassword, getFormattedDate()]
+    [email, username, fullname, hashedPassword, getFormattedDate(), 'https://i.postimg.cc/K8yZ8Mpn/user-icon-white-background.png']
   );
 
   return rows[0].id;   // siempre habrá un id válido aquí
