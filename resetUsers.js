@@ -242,10 +242,10 @@ async function seedAdmin0() {
   await registrarConsumoAgua({ userId: id, liters: 1.2, consumedAt: daysAgo(3) });
 
   // actividades (4)
-  await registrarActividadRealizada({ userId: id, activityName: 'Caminar',    durationMinutes: 40, distanceKm: 3, performedAt: daysAgo(0) });
-  await registrarActividadRealizada({ userId: id, activityName: 'Correr',     durationMinutes: 25, distanceKm: 5, performedAt: daysAgo(1) });
-  await registrarActividadRealizada({ userId: id, activityName: 'Sentadillas', series: 4, repetitions: 12, performedAt: daysAgo(2) });
-  await registrarActividadRealizada({ userId: id, activityName: 'Yoga',       durationMinutes: 60, performedAt: daysAgo(3) });
+  await registrarActividadRealizada({ userId: id, activityName: 'Caminar',    durationMinutes: 40, distanceKm: 3, performedAt: daysAgo(0), caloriesBurned: 100 });
+  await registrarActividadRealizada({ userId: id, activityName: 'Correr',     durationMinutes: 25, distanceKm: 5, performedAt: daysAgo(1), caloriesBurned: 150 });
+  await registrarActividadRealizada({ userId: id, activityName: 'Sentadillas', series: 4, repetitions: 12, performedAt: daysAgo(2), caloriesBurned: 200 });
+  await registrarActividadRealizada({ userId: id, activityName: 'Yoga',       durationMinutes: 60, performedAt: daysAgo(3), caloriesBurned: 10 });
 }
 
 async function seedAdmin1() {
@@ -271,10 +271,10 @@ async function seedAdmin1() {
   await registrarConsumoAgua({ userId: id, liters: 1.0, consumedAt: daysAgo(2) });
   await registrarConsumoAgua({ userId: id, liters: 1.4, consumedAt: daysAgo(4) });
 
-  await registrarActividadRealizada({ userId: id, activityName: 'Nadar',      durationMinutes: 30, distanceKm: 1, performedAt: daysAgo(0) });
-  await registrarActividadRealizada({ userId: id, activityName: 'Bicicleta',  durationMinutes: 50, distanceKm: 15, performedAt: daysAgo(1) });
-  await registrarActividadRealizada({ userId: id, activityName: 'Flexiones',  series: 3, repetitions: 15, performedAt: daysAgo(2) });
-  await registrarActividadRealizada({ userId: id, activityName: 'Plancha',    durationMinutes: 5, performedAt: daysAgo(3) });
+  await registrarActividadRealizada({ userId: id, activityName: 'Nadar',      durationMinutes: 30, distanceKm: 1, performedAt: daysAgo(0), caloriesBurned: 10  });
+  await registrarActividadRealizada({ userId: id, activityName: 'Bicicleta',  durationMinutes: 50, distanceKm: 15, performedAt: daysAgo(1), caloriesBurned: 10  });
+  await registrarActividadRealizada({ userId: id, activityName: 'Flexiones',  series: 3, repetitions: 15, performedAt: daysAgo(2), caloriesBurned: 10  });
+  await registrarActividadRealizada({ userId: id, activityName: 'Plancha',    durationMinutes: 5, performedAt: daysAgo(3), caloriesBurned: 10  });
 }
 
 async function seedAdmin2() {
@@ -300,10 +300,10 @@ async function seedAdmin2() {
   await registrarConsumoAgua({ userId: id, liters: 0.7, consumedAt: daysAgo(2) });
   await registrarConsumoAgua({ userId: id, liters: 1.1, consumedAt: daysAgo(5) });
 
-  await registrarActividadRealizada({ userId: id, activityName: 'Burpees',     series: 4, repetitions: 10, performedAt: daysAgo(0) });
-  await registrarActividadRealizada({ userId: id, activityName: 'Abdominales', series: 3, repetitions: 20, performedAt: daysAgo(1) });
-  await registrarActividadRealizada({ userId: id, activityName: 'Caminar',     durationMinutes: 30, distanceKm: 2, performedAt: daysAgo(3) });
-  await registrarActividadRealizada({ userId: id, activityName: 'Yoga',        durationMinutes: 45, performedAt: daysAgo(6) });
+  await registrarActividadRealizada({ userId: id, activityName: 'Burpees',     series: 4, repetitions: 10, performedAt: daysAgo(0), caloriesBurned: 10  });
+  await registrarActividadRealizada({ userId: id, activityName: 'Abdominales', series: 3, repetitions: 20, performedAt: daysAgo(1), caloriesBurned: 10  });
+  await registrarActividadRealizada({ userId: id, activityName: 'Caminar',     durationMinutes: 30, distanceKm: 2, performedAt: daysAgo(3), caloriesBurned: 10  });
+  await registrarActividadRealizada({ userId: id, activityName: 'Yoga',        durationMinutes: 45, performedAt: daysAgo(6), caloriesBurned: 10  });
 }
 
 // ---------- ejecución ---------- //

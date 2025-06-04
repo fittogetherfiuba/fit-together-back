@@ -98,10 +98,12 @@ async function getDoneActivitiesThisWeek (req,res) {
     const { rows } = await pool.query(
       `SELECT uae.id,
               a.name        AS activity_name,
+              a.type        AS activity_type,
               uae.duration_minutes,
               uae.distance_km,
               uae.series,
               uae.repetitions,
+              uae.calories_burned,
               uae.performed_at
          FROM user_activity_entries uae
          JOIN activities a
@@ -116,10 +118,12 @@ async function getDoneActivitiesThisWeek (req,res) {
     const entries = rows.map(r => ({
       id:               r.id,
       activityName:     r.activity_name,
+      activityType:     r.activity_type,
       durationMinutes:  r.duration_minutes,
       distanceKm:       r.distance_km,
       series:           r.series,
       repetitions:      r.repetitions,
+      caloriesBurned:   r.calories_burned,
       performedAt:      r.performed_at
     }));
 
