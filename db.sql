@@ -107,12 +107,12 @@ INSERT INTO nutrients (slug, name, unit) VALUES
   ('fiber', 'Fibras', 'g'),
   ('sodium', 'Sodio', 'mg');
 
-    CREATE TABLE food_nutrients (
-      food_id INTEGER REFERENCES foods(id) ON DELETE CASCADE,
-      nutrient_id INTEGER REFERENCES nutrients(id) ON DELETE CASCADE,
-      amount_per_100g NUMERIC NOT NULL,
-      PRIMARY KEY (food_id, nutrient_id)
-    );
+CREATE TABLE food_nutrients (
+  food_id INTEGER REFERENCES foods(id) ON DELETE CASCADE,
+  nutrient_id INTEGER REFERENCES nutrients(id) ON DELETE CASCADE,
+  amount_per_100g NUMERIC NOT NULL,
+  PRIMARY KEY (food_id, nutrient_id)
+);
 
 INSERT INTO foods (name, created_by_user_id, calories_per_100g) VALUES
 ('Manzana', NULL, 52),
@@ -300,3 +300,86 @@ CREATE TABLE community_subscriptions (
                                            community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
                                            UNIQUE(user_id, community_id)
 );
+
+
+INSERT INTO diet_profiles (name) VALUES
+('vegetariano'),          -- id 1
+('vegano'),               -- id 2
+('celíaco'),              -- id 3
+('alérgico al maní'),     -- id 4
+('pescetariano'),         -- id 5
+('intolerante a la lactosa'), -- id 6
+('baja en sodio'),        -- id 7
+('baja en carbohidratos');-- id 8
+
+
+CREATE TABLE diet_profiles (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+    created_by_user_id INTEGER REFERENCES users(id),
+);
+
+CREATE TABLE diet_restrictions (
+    profile_id INTEGER REFERENCES diet_profiles(id) ON DELETE CASCADE,
+    food_id INTEGER REFERENCES foods(id) ON DELETE CASCADE,
+    PRIMARY KEY (profile_id, food_id)
+);
+
+CREATE TABLE user_diet_profiles (
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    profile_id INTEGER REFERENCES diet_profiles(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, profile_id)
+);
+
+
+
+-- Vegetariano (sin pollo, carne)
+INSERT INTO diet_restrictions (profile_id, food_id) VALUES
+(1, 3),  -- Pollo
+(1, 9);  -- Carne vacuna
+
+-- Vegano (sin carne, pollo, leche, huevos, yogur, queso)
+INSERT INTO diet_restrictions (profile_id, food_id) VALUES
+(2, 3),   -- Pollo
+(2, 9),   -- Carne vacuna
+(2, 5),   -- Leche
+(2, 7),   -- Huevos
+(2, 8),   -- Yogur
+(2, 13);  -- Queso
+
+-- Celíaco (sin pan integral, avena)
+INSERT INTO diet_restrictions (profile_id, food_id) VALUES
+(3, 6),   -- Pan integral
+(3, 15);  -- Avena
+
+-- Alérgico al maní (simulado con aceite de oliva)
+INSERT INTO diet_restrictions (profile_id, food_id) VALUES
+(4, 14);  -- Aceite de oliva
+
+-- Pescetariano (sin pollo, carne)
+INSERT INTO diet_restrictions (profile_id, food_id) VALUES
+(5, 3),  -- Pollo
+(5, 9);  -- Carne vacuna
+
+-- Intolerante a la lactosa (sin leche, yogur, queso)
+INSERT INTO diet_restrictions (profile_id, food_id) VALUES
+(6, 5),   -- Leche
+(6, 8),   -- Yogur
+(6, 13);  -- Queso
+
+-- Baja en sodio (sodio elevado)
+INSERT INTO diet_restrictions (profile_id, food_id) VALUES
+(7, 5),   -- Leche (44 mg)
+(7, 6),   -- Pan integral (490 mg)
+(7, 7),   -- Huevos (124 mg)
+(7, 9),   -- Carne vacuna (65 mg)
+(7, 13);  -- Queso (621 mg)
+
+-- Baja en carbohidratos
+INSERT INTO diet_restrictions (profile_id, food_id) VALUES
+(8, 2),   -- Banana (23 g)
+(8, 4),   -- Arroz (28 g)
+(8, 6),   -- Pan integral (41 g)
+(8, 10),  -- Lentejas (20 g)
+(8, 11),  -- Pasta (25 g)
+(8, 15);  -- Avena (67 g)
