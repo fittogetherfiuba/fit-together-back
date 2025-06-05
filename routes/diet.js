@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const {  } = require('../controllers/dietController');
+const { addUsersDietProfile } = require('../controllers/dietController');
 
-router.post
+router.post('/', addUsersDietProfile)
 
 module.exports = router;

@@ -302,21 +302,13 @@ CREATE TABLE community_subscriptions (
 );
 
 
-INSERT INTO diet_profiles (name) VALUES
-('vegetariano'),          -- id 1
-('vegano'),               -- id 2
-('celíaco'),              -- id 3
-('alérgico al maní'),     -- id 4
-('pescetariano'),         -- id 5
-('intolerante a la lactosa'), -- id 6
-('baja en sodio'),        -- id 7
-('baja en carbohidratos');-- id 8
+
 
 
 CREATE TABLE diet_profiles (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
-    created_by_user_id INTEGER REFERENCES users(id),
+    name TEXT NOT NULL UNIQUE,
+    created_by_user_id INTEGER REFERENCES users(id)
 );
 
 CREATE TABLE diet_restrictions (
@@ -331,7 +323,15 @@ CREATE TABLE user_diet_profiles (
     PRIMARY KEY (user_id, profile_id)
 );
 
-
+INSERT INTO diet_profiles (name) VALUES
+('vegetariano'),          -- id 1
+('vegano'),               -- id 2
+('celíaco'),              -- id 3
+('alérgico al maní'),     -- id 4
+('pescetariano'),         -- id 5
+('intolerante a la lactosa'), -- id 6
+('baja en sodio'),        -- id 7
+('baja en carbohidratos');-- id 8
 
 -- Vegetariano (sin pollo, carne)
 INSERT INTO diet_restrictions (profile_id, food_id) VALUES
