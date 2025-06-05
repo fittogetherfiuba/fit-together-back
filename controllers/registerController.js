@@ -12,16 +12,17 @@ function getFormattedDate() {
 }
 
 async function registerUser (req, res) {
-    const { email, password, username, fullname } = req.body;
+    const { email, password, username, fullname, imageUrl } = req.body;
     if (!email || !password || !username || !fullname) return res.status(400).json({ error: 'Faltan campos' });
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const code = generateVerificationCode();
 
+        const image = imageUrl ? imageUrl : 'https://i.postimg.cc/K8yZ8Mpn/user-icon-white-background.png';
         const result = await pool.query(
             'INSERT INTO users (email, password, username, fullname, registrationDay, image_url, verified, verification_code) VALUES ($1, $2, $3, $4, $5, $6, false, $7) RETURNING id, username, email',
-            [email, hashedPassword, username, fullname, getFormattedDate(), 'https://i.postimg.cc/K8yZ8Mpn/user-icon-white-background.png', code]
+            [email, hashedPassword, username, fullname, getFormattedDate(), image, code]
         );
 
         const user = result.rows[0];
