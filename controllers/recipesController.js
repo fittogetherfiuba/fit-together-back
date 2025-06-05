@@ -115,9 +115,13 @@ async function createRecipe(req, res) {
 
 // Obtener todas las recetas con ítems y nutrientes
 async function getRecipes(req, res) {
-    //const { userId } = req.query;
-  
     try {
+      const itemsQuery = await pool.query(`
+        SELECT ri.recipe_id, ri.grams, f.id AS food_id, f.name AS food_name
+        FROM recipe_items ri
+        JOIN foods f ON ri.food_id = f.id
+      `);
+
       const queryBase = `
         SELECT r.id, r.name, r.username, r.user_id, r.total_calories, r.steps, r.created_at, r.pic
         FROM recipes r
@@ -130,15 +134,6 @@ async function getRecipes(req, res) {
       if (recipes.length === 0) {
         return res.json({ recipes: [] });
       }
-  
-      const recipeIds = recipes.map(r => r.id);
-  
-      const itemsQuery = await pool.query(`
-        SELECT ri.recipe_id, ri.grams, f.id AS food_id, f.name AS food_name
-        FROM recipe_items ri
-        JOIN foods f ON ri.food_id = f.id
-        WHERE ri.recipe_id = ANY($1::int[])
-      `, [recipeIds]);
   
       const itemsByRecipe = {};
       for (const item of itemsQuery.rows) {
@@ -168,7 +163,11 @@ async function getRecipes(req, res) {
         };
       }));
   
-      res.json({ recipes: enriched });
+      if (req.body.filterIngredients.length) {
+        res.json({ recipes: enriched.filter((recipe) => req.body.filterIngredients.every(item => recipe.items.map(ingredient => ingredient.foodId).includes(item)))}); 
+      } else {
+        res.json({ recipes: enriched });
+      }
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Error al obtener recetas' });

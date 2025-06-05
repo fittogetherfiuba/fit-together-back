@@ -7,6 +7,6 @@ const {
 } = require('../controllers/recipesController');
 
 router.post('/create', createRecipe);
-router.get('/get', getRecipes);
+router.post('/', getRecipes);
 
 module.exports = router;
