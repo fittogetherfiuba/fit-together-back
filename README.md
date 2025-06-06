@@ -181,3 +181,20 @@ curl -X GET http://localhost:3000/api/communities/2/posts \
 curl -X GET http://localhost:3000/api/communities/posts/1 \
   -H "Content-Type: application/json"
 ```
+
+## Postear comentario
+```bash
+curl -X POST http://localhost:3000/api/communities/posts/1/comments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 2,
+    "postId": 1,
+    "body": "Totalmente de acuerdo con tu recomendación, me pasó lo mismo."
+  }'
+```
+
+## Obtener comentarios
+```bash
+curl -X GET http://localhost:3000/api/communities/posts/1/comments \
+  -H "Content-Type: application/json"
+```

@@ -317,3 +317,11 @@ CREATE TABLE communities_posts_photos (
     post_id INTEGER NOT NULL REFERENCES communities_posts(id) ON DELETE CASCADE,
     url TEXT NOT NULL
 );
+
+CREATE TABLE communities_posts_comments (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER NOT NULL REFERENCES communities_posts(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    body TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

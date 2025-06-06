@@ -253,6 +253,47 @@ async function getPostById(req, res) {
     }
 }
 
+async function addComment(req, res) {
+    const { postId, userId, body } = req.body;
+
+    if (!postId || !userId || !body) {
+        return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+
+    try {
+        const result = await pool.query(
+            `INSERT INTO communities_posts_comments (post_id, user_id, body)
+             VALUES ($1, $2, $3) RETURNING *`,
+            [postId, userId, body]
+        );
+
+        res.status(201).json({ message: 'Comentario creado', comment: toCamelCase(result.rows[0]) });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al agregar el comentario' });
+    }
+}
+
+async function getComments(req, res) {
+    const { postId } = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT c.*, u.username
+             FROM communities_posts_comments c
+             JOIN users u ON c.user_id = u.id
+             WHERE c.post_id = $1
+             ORDER BY c.created_at ASC`,
+            [postId]
+        );
+
+        res.json({ comments: toCamelCase(result.rows) });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener comentarios' });
+    }
+}
+
 module.exports = {
     addCommunity,
     getCommunities,
@@ -261,5 +302,7 @@ module.exports = {
     createPost,
     updatePost,
     getCommunityPosts,
-    getPostById
+    getPostById,
+    addComment,
+    getComments
 };
