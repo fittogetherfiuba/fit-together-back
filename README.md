@@ -141,3 +141,43 @@ curl --location 'http://localhost:3000/api/users/resend-verification-code' \
 --header 'Content-Type: application/json' \
 --data '{"userId": 1}'
 ```
+
+## Crear post
+```bash
+curl -X POST http://localhost:3000/api/communities/posts \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 1,
+    "communityId": 2,
+    "title": "Mi experiencia",
+    "body": "Muy bueno el lugar.",
+    "topic": "Recomendaciones",
+    "photos": ["https://example.com/photo1.jpg"]
+  }'
+```
+
+## Editar post
+```bash
+
+curl -X PUT http://localhost:3000/api/communities/posts/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 1,
+    "title": "Título actualizado",
+    "body": "Texto nuevo del post.",
+    "topic": "Consejos",
+    "photos": ["https://example.com/actualizado.jpg"]
+  }'
+```
+
+## Obtener posts de una comunidad
+```bash
+curl -X GET http://localhost:3000/api/communities/2/posts \
+  -H "Content-Type: application/json"
+```
+
+## Obtener post
+```bash
+curl -X GET http://localhost:3000/api/communities/posts/1 \
+  -H "Content-Type: application/json"
+```
