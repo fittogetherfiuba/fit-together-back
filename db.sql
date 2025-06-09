@@ -301,9 +301,30 @@ CREATE TABLE community_subscriptions (
                                            UNIQUE(user_id, community_id)
 );
 
+CREATE TABLE communities_posts (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    community_id INTEGER NOT NULL REFERENCES communities(id),
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    topic TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
+CREATE TABLE communities_posts_photos (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER NOT NULL REFERENCES communities_posts(id) ON DELETE CASCADE,
+    url TEXT NOT NULL
+);
 
-
+CREATE TABLE communities_posts_comments (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER NOT NULL REFERENCES communities_posts(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    body TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE diet_profiles (
     id SERIAL PRIMARY KEY,
