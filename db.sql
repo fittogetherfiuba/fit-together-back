@@ -323,15 +323,15 @@ CREATE TABLE user_diet_profiles (
     PRIMARY KEY (user_id, profile_id)
 );
 
-INSERT INTO diet_profiles (name) VALUES
-('vegetariano'),          -- id 1
-('vegano'),               -- id 2
-('celíaco'),              -- id 3
-('alérgico al maní'),     -- id 4
-('pescetariano'),         -- id 5
-('intolerante a la lactosa'), -- id 6
-('baja en sodio'),        -- id 7
-('baja en carbohidratos');-- id 8
+INSERT INTO diet_profiles (id, name, created_by_user_id) VALUES
+(1,'vegetariano',NULL),          -- id 1
+(2,'vegano',NULL),               -- id 2
+(3,'celíaco',NULL),              -- id 3
+(4,'alérgico al maní',NULL),     -- id 4
+(5,'pescetariano',NULL),         -- id 5
+(6,'intolerante a la lactosa',NULL), -- id 6
+(7,'baja en sodio',NULL),        -- id 7
+(8,'baja en carbohidratos',NULL);-- id 8
 
 -- Vegetariano (sin pollo, carne)
 INSERT INTO diet_restrictions (profile_id, food_id) VALUES
