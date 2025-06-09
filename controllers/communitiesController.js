@@ -208,13 +208,13 @@ async function getCommunityPosts(req, res) {
 
     try {
         const result = await pool.query(
-            `SELECT p.id, p.title, p.topic, p.created_at, u.username AS author,
+            `SELECT p.id, p.title, p.body, p.topic, p.created_at, u.username AS author,
                     COALESCE(json_agg(pp.url) FILTER (WHERE pp.url IS NOT NULL), '[]') AS photos
              FROM communities_posts p
              JOIN users u ON p.user_id = u.id
              LEFT JOIN communities_posts_photos pp ON p.id = pp.post_id
              WHERE p.community_id = $1
-             GROUP BY p.id, u.username
+             GROUP BY p.id, p.title, p.body, p.topic, p.created_at, u.username
              ORDER BY p.created_at DESC`,
             [communityId]
         );
