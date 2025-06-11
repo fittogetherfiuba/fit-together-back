@@ -348,8 +348,8 @@ CREATE TABLE user_diet_profiles (
 INSERT INTO diet_profiles (id, name, created_by_user_id) VALUES
 (1,'vegetariano',NULL),          -- id 1
 (2,'vegano',NULL),               -- id 2
-(3,'celíaco',NULL),              -- id 3
-(4,'alérgico al maní',NULL),     -- id 4
+(3,'celiaco',NULL),              -- id 3
+(4,'alergico al mani',NULL),     -- id 4
 (5,'pescetariano',NULL),         -- id 5
 (6,'intolerante a la lactosa',NULL), -- id 6
 (7,'baja en sodio',NULL),        -- id 7
@@ -405,3 +405,39 @@ INSERT INTO diet_restrictions (profile_id, food_id) VALUES
 (8, 10),  -- Lentejas (20 g)
 (8, 11),  -- Pasta (25 g)
 (8, 15);  -- Avena (67 g)
+
+-- Perfiles "no come <comida>" para cada alimento
+INSERT INTO diet_profiles (id, name, created_by_user_id) VALUES
+(9,  'no come Manzana', NULL),
+(10, 'no come Banana', NULL),
+(11, 'no come Pollo', NULL),
+(12, 'no come Arroz', NULL),
+(13, 'no come Leche', NULL),
+(14, 'no come Pan integral', NULL),
+(15, 'no come Huevos', NULL),
+(16, 'no come Yogur', NULL),
+(17, 'no come Carne vacuna', NULL),
+(18, 'no come Lentejas', NULL),
+(19, 'no come Pasta', NULL),
+(20, 'no come Tomate', NULL),
+(21, 'no come Queso', NULL),
+(22, 'no come Aceite de oliva', NULL),
+(23, 'no come Avena', NULL);
+
+-- Restricciones correspondientes en diet_restrictions
+INSERT INTO diet_restrictions (profile_id, food_id) VALUES
+(9,  1),   -- Manzana
+(10, 2),   -- Banana
+(11, 3),   -- Pollo
+(12, 4),   -- Arroz
+(13, 5),   -- Leche
+(14, 6),   -- Pan integral
+(15, 7),   -- Huevos
+(16, 8),   -- Yogur
+(17, 9),   -- Carne vacuna
+(18, 10),  -- Lentejas
+(19, 11),  -- Pasta
+(20, 12),  -- Tomate
+(21, 13),  -- Queso
+(22, 14),  -- Aceite de oliva
+(23, 15);  -- Avena
