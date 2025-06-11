@@ -282,10 +282,26 @@ async function getCaloriesConsumedThisWeek(req,res) {
 
 // Ver comidas disponibles
 async function getFoods(req, res) {
+  const { userId } = req.body || {};
+
   try {
-    const foodsResult = await pool.query(
-      `SELECT * FROM foods ORDER BY name ASC`
-    );
+    let foodsResult;
+
+    if (userId) {
+      // Solo propias o globales
+      foodsResult = await pool.query(
+        `SELECT * FROM foods
+         WHERE created_by_user_id = $1 OR created_by_user_id IS NULL
+         ORDER BY name ASC`,
+        [userId]
+      );
+    } else {
+      // Todas las comidas
+      foodsResult = await pool.query(
+        `SELECT * FROM foods
+         ORDER BY name ASC`
+      );
+    }
 
     const foods = foodsResult.rows;
     const foodIds = foods.map(f => f.id);
@@ -326,6 +342,7 @@ async function getFoods(req, res) {
     res.status(500).json({ error: 'Error al obtener alimentos' });
   }
 }
+
 
 //  Lista de comidas consumidas desde el último lunes
 async function getUsersConsumedFoodsThisWeek(req, res) {
