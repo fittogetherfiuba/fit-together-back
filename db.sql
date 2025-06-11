@@ -77,6 +77,7 @@ CREATE TABLE user_activity_entries (
 
 CREATE TABLE recipes (
   id SERIAL PRIMARY KEY,
+  username TEXT NOT NULL,
   name TEXT NOT NULL,
   user_id INTEGER REFERENCES users(id),
   total_calories NUMERIC,
