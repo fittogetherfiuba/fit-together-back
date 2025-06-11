@@ -6,8 +6,9 @@ const { addUsersDietProfile,
     getDietProfileOfFood, 
     getDietProfileOfListedFoods,
     createDietProfile,
-    deleteUsersDietProfile
-    } = require('../controllers/dietController');
+    deleteUsersDietProfile,
+    getUserRestrictedFoods
+} = require('../controllers/dietController');
 
 router.post('/', addUsersDietProfile)
 router.get('/', getDietProfiles)
@@ -16,5 +17,6 @@ router.get('/profile-of-food/:food', getDietProfileOfFood)
 router.get('/profile-of-food', getDietProfileOfListedFoods)
 router.post('/profiles/:userId', createDietProfile)
 router.delete('/:userId', deleteUsersDietProfile)
+router.get('/restricted-foods/:userId', getUserRestrictedFoods)
 
 module.exports = router;

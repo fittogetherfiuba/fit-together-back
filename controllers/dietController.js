@@ -253,6 +253,27 @@ async function deleteUsersDietProfile(req, res){
     }
 }
 
+async function getUserRestrictedFoods(req, res) {
+  const { userId } = req.params;
+  if (!userId)
+        return res.status(400).json({ error: 'Falta UserId' });
+  try {
+    const { rows } = await pool.query(
+      `SELECT DISTINCT f.id, f.name
+       FROM user_diet_profiles udp
+       JOIN diet_restrictions dr ON udp.profile_id = dr.profile_id
+       JOIN foods f              ON dr.food_id = f.id
+       WHERE udp.user_id = $1
+       ORDER BY f.name;`,
+      [userId]
+    );
+    return res.json(rows);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error al obtener comidas restringidas del usuario' });
+  }
+}
+
 module.exports = {  
     addUsersDietProfile,
     getDietProfiles,
@@ -260,5 +281,6 @@ module.exports = {
     getDietProfileOfFood,
     getDietProfileOfListedFoods,
     createDietProfile,
-    deleteUsersDietProfile
+    deleteUsersDietProfile,
+    getUserRestrictedFoods
 };
