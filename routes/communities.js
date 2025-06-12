@@ -9,7 +9,7 @@ router.get('/all', getAllCommunities);
 router.post('/subscribe', subscribeToCommunity);
 router.post('/posts', createPost);
 router.put('/posts/:postId', updatePost);
-router.get('/:communityId/posts', getCommunityPosts);
+router.post('/:communityId/posts', getCommunityPosts);
 router.get('/posts/:postId', getPostById);
 router.post('/posts/:postId/comments', addComment);
 router.get('/posts/:postId/comments', getComments);
