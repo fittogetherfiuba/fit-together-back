@@ -201,3 +201,8 @@ curl -X POST http://localhost:3000/api/communities/posts/1/comments \
 curl -X GET http://localhost:3000/api/communities/posts/1/comments \
   -H "Content-Type: application/json"
 ```
+
+## Get default topics
+```bash
+curl --location 'http://localhost:3000/api/communities/topics'
+```

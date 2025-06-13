@@ -18,7 +18,6 @@ CREATE TABLE users (
                        verification_code TEXT
 );
 
-
 CREATE TABLE user_goals (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
@@ -313,6 +312,11 @@ CREATE TABLE communities_posts (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE topics (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL
+);
+
 CREATE TABLE communities_posts_photos (
     id SERIAL PRIMARY KEY,
     post_id INTEGER NOT NULL REFERENCES communities_posts(id) ON DELETE CASCADE,
@@ -441,3 +445,20 @@ INSERT INTO diet_restrictions (profile_id, food_id) VALUES
 (21, 13),  -- Queso
 (22, 14),  -- Aceite de oliva
 (23, 15);  -- Avena
+
+INSERT INTO topics (name)
+VALUES 
+('Alimentacion saludable'),
+('Planificacion de comidas'),
+('Macronutrientes'),
+('Restricciones alimentarias'),
+('Suplementacion'),
+('Perdida de peso'),
+('Ganancia muscular'),
+('Habitos saludables'),
+('Rutinas de fuerza'),
+('Cardio y resistencia'),
+('Sueno y recuperacion'),
+('Progreso semanal'),
+('Recomendaciones de IA'),
+('Menu sugerido');

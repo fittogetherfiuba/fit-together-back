@@ -207,7 +207,7 @@ async function getCommunityPosts(req, res) {
     const { communityId } = req.params;
     const { since, until } = req.query;
     const { topics } = req.body;
-    
+
     // Validar que el rango de fechas sea coherente
     if (since && until && new Date(since) > new Date(until)) {
         return res.status(400).json({ error: 'El parámetro "since" no puede ser posterior a "until"' });
@@ -328,6 +328,18 @@ async function getComments(req, res) {
     }
 }
 
+async function getTopics(req, res) {
+    try {
+        const result = await pool.query(
+            `SELECT id, name FROM topics ORDER BY name ASC`
+        );
+        res.json({ topics: result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener los tópicos' });
+    }
+}
+
 module.exports = {
     addCommunity,
     getCommunities,
@@ -338,5 +350,6 @@ module.exports = {
     getCommunityPosts,
     getPostById,
     addComment,
-    getComments
+    getComments,
+    getTopics
 };
