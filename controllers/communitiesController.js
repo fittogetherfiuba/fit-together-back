@@ -12,8 +12,8 @@ async function addCommunity(req, res) {
     try {
         // Crear comunidad
         const result = await pool.query(
-            `INSERT INTO communities (user_id, name, description)
-             VALUES ($1, $2, $3)
+            `INSERT INTO communities (user_id, name, description, subscribers)
+             VALUES ($1, $2, $3, 1)
              RETURNING *`,
             [userId, name, description || null]
         );
@@ -94,6 +94,13 @@ async function subscribeToCommunity(req, res) {
             `INSERT INTO community_subscriptions (user_id, community_id)
              VALUES ($1, $2)`,
             [userId, communityId]
+        );
+
+        await pool.query(
+            `UPDATE communities
+             SET subscribers = subscribers + 1
+             WHERE id = $1`,
+            [communityId]
         );
         res.status(201).json({ message: 'Suscripción exitosa' });
     } catch (err) {
@@ -208,6 +215,8 @@ async function getCommunityPosts(req, res) {
     const { since, until } = req.query;
     const { topics } = req.body;
 
+    console.log(topics)
+
     // Validar que el rango de fechas sea coherente
     if (since && until && new Date(since) > new Date(until)) {
         return res.status(400).json({ error: 'El parámetro "since" no puede ser posterior a "until"' });
@@ -240,6 +249,7 @@ async function getCommunityPosts(req, res) {
 
     if (Array.isArray(topics) && topics.length > 0) {
         const topicPlaceholders = topics.map((_, i) => `$${paramIndex + i}`).join(', ');
+        console.log(topicPlaceholders)
         query += ` AND p.topic IN (${topicPlaceholders})`;
         params.push(...topics);
         paramIndex += topics.length;
@@ -251,6 +261,8 @@ async function getCommunityPosts(req, res) {
     `;
 
     try {
+        console.log(query)
+        console.log(params)
         const result = await pool.query(query, params);
         res.json({ posts: toCamelCase(result.rows) });
     } catch (err) {

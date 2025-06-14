@@ -292,7 +292,8 @@ CREATE TABLE communities (
                              id SERIAL PRIMARY KEY,
                              user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                              name TEXT NOT NULL UNIQUE,
-                             description TEXT
+                             description TEXT,
+                             subscribers INTEGER NOT NULL
 );
 CREATE TABLE community_subscriptions (
                                            id SERIAL PRIMARY KEY,
