@@ -24,6 +24,7 @@ CREATE TABLE user_goals (
     user_id INTEGER REFERENCES users(id),
     type TEXT NOT NULL CHECK (type IN ('calories', 'water')),
     goal_value NUMERIC NOT NULL CHECK (goal_value > 0),
+    notified BOOLEAN NOT NULL DEFAULT false,
     CONSTRAINT unique_user_goal UNIQUE (user_id, type)
 );
 
