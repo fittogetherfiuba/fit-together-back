@@ -172,8 +172,11 @@ curl -X PUT http://localhost:3000/api/communities/posts/1 \
 
 ## Obtener posts de una comunidad
 ```bash
-curl -X GET http://localhost:3000/api/communities/2/posts \
-  -H "Content-Type: application/json"
+curl --X POST 'http://localhost:3000/api/communities/1/posts?since=2025-06-11&until=2025-06-12' \
+--header 'Content-Type: application/json' \
+--data '{
+    "topics": ["topico", "Test"]
+}'
 ```
 
 ## Obtener post
@@ -197,4 +200,9 @@ curl -X POST http://localhost:3000/api/communities/posts/1/comments \
 ```bash
 curl -X GET http://localhost:3000/api/communities/posts/1/comments \
   -H "Content-Type: application/json"
+```
+
+## Get default topics
+```bash
+curl --location 'http://localhost:3000/api/communities/topics'
 ```

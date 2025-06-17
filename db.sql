@@ -18,7 +18,6 @@ CREATE TABLE users (
                        verification_code TEXT
 );
 
-
 CREATE TABLE user_goals (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
@@ -293,7 +292,8 @@ CREATE TABLE communities (
                              id SERIAL PRIMARY KEY,
                              user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                              name TEXT NOT NULL UNIQUE,
-                             description TEXT
+                             description TEXT,
+                             subscribers INTEGER NOT NULL
 );
 CREATE TABLE community_subscriptions (
                                            id SERIAL PRIMARY KEY,
@@ -311,6 +311,11 @@ CREATE TABLE communities_posts (
     topic TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE topics (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE communities_posts_photos (
@@ -441,3 +446,20 @@ INSERT INTO diet_restrictions (profile_id, food_id) VALUES
 (21, 13),  -- Queso
 (22, 14),  -- Aceite de oliva
 (23, 15);  -- Avena
+
+INSERT INTO topics (name)
+VALUES 
+('Alimentacion saludable'),
+('Planificacion de comidas'),
+('Macronutrientes'),
+('Restricciones alimentarias'),
+('Suplementacion'),
+('Perdida de peso'),
+('Ganancia muscular'),
+('Habitos saludables'),
+('Rutinas de fuerza'),
+('Cardio y resistencia'),
+('Sueno y recuperacion'),
+('Progreso semanal'),
+('Recomendaciones de IA'),
+('Menu sugerido');

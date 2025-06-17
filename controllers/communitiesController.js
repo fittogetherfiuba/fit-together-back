@@ -12,8 +12,8 @@ async function addCommunity(req, res) {
     try {
         // Crear comunidad
         const result = await pool.query(
-            `INSERT INTO communities (user_id, name, description)
-             VALUES ($1, $2, $3)
+            `INSERT INTO communities (user_id, name, description, subscribers)
+             VALUES ($1, $2, $3, 1)
              RETURNING *`,
             [userId, name, description || null]
         );
@@ -94,6 +94,13 @@ async function subscribeToCommunity(req, res) {
             `INSERT INTO community_subscriptions (user_id, community_id)
              VALUES ($1, $2)`,
             [userId, communityId]
+        );
+
+        await pool.query(
+            `UPDATE communities
+             SET subscribers = subscribers + 1
+             WHERE id = $1`,
+            [communityId]
         );
         res.status(201).json({ message: 'Suscripción exitosa' });
     } catch (err) {
@@ -205,26 +212,60 @@ async function updatePost(req, res) {
 
 async function getCommunityPosts(req, res) {
     const { communityId } = req.params;
+    const { since, until } = req.query;
+    const { topics } = req.body;
+
+    // Validar que el rango de fechas sea coherente
+    if (since && until && new Date(since) > new Date(until)) {
+        return res.status(400).json({ error: 'El parámetro "since" no puede ser posterior a "until"' });
+    }
+
+    let query = `
+        SELECT p.id, p.title, p.body, p.topic, p.created_at, u.username AS author,
+               COALESCE(json_agg(pp.url) FILTER (WHERE pp.url IS NOT NULL), '[]') AS photos
+        FROM communities_posts p
+        JOIN users u ON p.user_id = u.id
+        LEFT JOIN communities_posts_photos pp ON p.id = pp.post_id
+        WHERE p.community_id = $1
+    `;
+    const params = [communityId];
+    let paramIndex = 2;
+
+    // Filtros opcionales
+    if (since) {
+        query += ` AND p.created_at >= $${paramIndex}`;
+        params.push(since);
+        paramIndex++;
+    }
+
+    if (until) {
+        const parsedUntil = until && !until.includes('T') ? until + 'T23:59:59.999' : until;
+        query += ` AND p.created_at <= $${paramIndex}`;
+        params.push(parsedUntil);
+        paramIndex++;
+    }
+
+    if (Array.isArray(topics) && topics.length > 0) {
+        const topicPlaceholders = topics.map((_, i) => `$${paramIndex + i}`).join(', ');
+        query += ` AND p.topic IN (${topicPlaceholders})`;
+        params.push(...topics);
+        paramIndex += topics.length;
+    }
+
+    query += `
+        GROUP BY p.id, p.title, p.body, p.topic, p.created_at, u.username
+        ORDER BY p.created_at DESC
+    `;
 
     try {
-        const result = await pool.query(
-            `SELECT p.id, p.title, p.body, p.topic, p.created_at, u.username AS author,
-                    COALESCE(json_agg(pp.url) FILTER (WHERE pp.url IS NOT NULL), '[]') AS photos
-             FROM communities_posts p
-             JOIN users u ON p.user_id = u.id
-             LEFT JOIN communities_posts_photos pp ON p.id = pp.post_id
-             WHERE p.community_id = $1
-             GROUP BY p.id, p.title, p.body, p.topic, p.created_at, u.username
-             ORDER BY p.created_at DESC`,
-            [communityId]
-        );
-
+        const result = await pool.query(query, params);
         res.json({ posts: toCamelCase(result.rows) });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener los posteos' });
     }
 }
+
 
 async function getPostById(req, res) {
     const { postId } = req.params;
@@ -294,6 +335,18 @@ async function getComments(req, res) {
     }
 }
 
+async function getTopics(req, res) {
+    try {
+        const result = await pool.query(
+            `SELECT id, name FROM topics ORDER BY name ASC`
+        );
+        res.json({ topics: result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener los tópicos' });
+    }
+}
+
 module.exports = {
     addCommunity,
     getCommunities,
@@ -304,5 +357,6 @@ module.exports = {
     getCommunityPosts,
     getPostById,
     addComment,
-    getComments
+    getComments,
+    getTopics
 };
