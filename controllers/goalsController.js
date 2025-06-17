@@ -117,6 +117,33 @@ async function markGoalNotified(req, res) {
   }
 }
 
+// Eliminar un objetivo
+async function deleteGoal(req, res) {
+  const { userId, type } = req.body;
+
+  const allowedTypes = ['calories', 'water'];
+  const normalizedType = typeof type === 'string' ? type.trim().toLowerCase() : null;
+
+  if (!userId || !normalizedType) {
+    return res.status(400).json({ error: 'Falta userId o type' });
+  }
+
+  if (!allowedTypes.includes(normalizedType)) {
+    return res.status(400).json({ error: 'type inválido' });
+  }
+
+  try {
+    await pool.query(
+      `DELETE FROM user_goals WHERE user_id = $1 AND type = $2`,
+      [userId, normalizedType]
+    );
+    res.json({ message: 'Objetivo eliminado' });
+  } catch (err) {
+    console.error('[deleteGoal] Error al eliminar objetivo:', err);
+    res.status(500).json({ error: 'Error al eliminar objetivo del usuario' });
+  }
+}
 
 
-module.exports = { setGoals, getGoals, markGoalNotified };
+
+module.exports = { setGoals, getGoals, markGoalNotified, deleteGoal };
