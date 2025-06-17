@@ -292,7 +292,28 @@ async function getComments(req, res) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener comentarios' });
     }
+
 }
+
+async function getCommunityMembers(req, res) {
+    const { communityId } = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT u.id, u.username, u.fullname, u.image_url
+             FROM community_subscriptions cs
+             JOIN users u ON cs.user_id = u.id
+             WHERE cs.community_id = $1`,
+            [communityId]
+        );
+
+        res.json({ members: result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener los miembros' });
+    }
+}
+
 
 module.exports = {
     addCommunity,
@@ -304,5 +325,6 @@ module.exports = {
     getCommunityPosts,
     getPostById,
     addComment,
-    getComments
+    getComments,
+    getCommunityMembers,
 };
