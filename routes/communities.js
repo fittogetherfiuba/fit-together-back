@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { addCommunity , getCommunities, getAllCommunities, subscribeToCommunity, createPost, updatePost, getCommunityPosts, getPostById, addComment, getComments, getTopics} = require('../controllers/communitiesController');
+const { addCommunity , getCommunities, getAllCommunities, subscribeToCommunity, createPost, updatePost, getCommunityPosts, getPostById, addComment, getComments, getTopics, getCommunityMembers} = require('../controllers/communitiesController');
 const { route } = require('./communities');
 
 router.post('/create', addCommunity)
@@ -14,6 +14,7 @@ router.get('/posts/:postId', getPostById);
 router.post('/posts/:postId/comments', addComment);
 router.get('/posts/:postId/comments', getComments);
 router.get('/topics', getTopics);
+router.get('/:communityId/members', getCommunityMembers);
 
 module.exports = router;
 
