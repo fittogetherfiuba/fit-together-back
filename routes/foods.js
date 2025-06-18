@@ -8,7 +8,9 @@ const {
     getFoods , 
     getCaloriesConsumedThisWeek, 
     getUsersConsumedFoodsThisWeek,
-    getAllNutrients
+    getAllNutrients,
+    getTopFoodsByPeriodLastMonth
+
 } = require('../controllers/foodsController');
 
 router.post('/entry', addConsumedFood)
@@ -18,6 +20,7 @@ router.get('/calories/daily', getUsersCaloriesConsumedDaily)
 router.get('', getFoods)
 router.get('/calories/since-last-monday', getCaloriesConsumedThisWeek)
 router.get('/entries/since-last-monday', getUsersConsumedFoodsThisWeek)
-router.get('/nutrients', getAllNutrients)
+router.get('/nutrients', getAllNutrients),
+router.get('/top-foods', getTopFoodsByPeriodLastMonth)
 
 module.exports = router;

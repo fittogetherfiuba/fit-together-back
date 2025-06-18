@@ -214,6 +214,69 @@ async function registrarActividadRealizada({
   return toCamelCase(ins.rows[0]);
 }
 
+async function registerUsers0FoodsEntries({id}){
+      // ---------- día 0 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Banana',   grams: 140, period: 'desayuno', consumedAt: daysAgo(0) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Pollo',    grams: 200, period: 'almuerzo',  consumedAt: daysAgo(0) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Manzana',  grams: 120, period: 'merienda',  consumedAt: daysAgo(0) });
+
+    // ---------- día 1 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Yogur',    grams: 180, period: 'desayuno', consumedAt: daysAgo(1) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Arroz',    grams: 250, period: 'almuerzo', consumedAt: daysAgo(1) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Pasta',    grams: 200, period: 'cena',     consumedAt: daysAgo(1) });
+
+    // ---------- día 2 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Pollo',    grams: 200, period: 'almuerzo', consumedAt: daysAgo(2) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Manzana',  grams: 120, period: 'merienda', consumedAt: daysAgo(2) });
+
+    // ---------- día 3 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Banana',   grams: 140, period: 'desayuno', consumedAt: daysAgo(3) });
+
+    // ---------- día 4 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Yogur',    grams: 180, period: 'desayuno', consumedAt: daysAgo(4) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Arroz',    grams: 250, period: 'almuerzo', consumedAt: daysAgo(4) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Pasta',    grams: 200, period: 'cena',     consumedAt: daysAgo(4) });
+
+    // ---------- día 5 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Pollo',    grams: 200, period: 'almuerzo', consumedAt: daysAgo(5) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Manzana',  grams: 120, period: 'merienda', consumedAt: daysAgo(5) });
+
+    // ---------- día 6 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Banana',   grams: 140, period: 'desayuno', consumedAt: daysAgo(6) });
+
+    // ---------- día 7 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Yogur',    grams: 180, period: 'desayuno', consumedAt: daysAgo(7) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Arroz',    grams: 250, period: 'almuerzo', consumedAt: daysAgo(7) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Pasta',    grams: 200, period: 'cena',     consumedAt: daysAgo(7) });
+
+    // ---------- día 8 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Pollo',    grams: 200, period: 'almuerzo', consumedAt: daysAgo(8) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Manzana',  grams: 120, period: 'merienda', consumedAt: daysAgo(8) });
+
+    // ---------- día 9 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Banana',   grams: 140, period: 'desayuno', consumedAt: daysAgo(9) });
+
+    // ---------- día 10 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Yogur',    grams: 180, period: 'desayuno', consumedAt: daysAgo(10) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Arroz',    grams: 250, period: 'almuerzo', consumedAt: daysAgo(10) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Pasta',    grams: 200, period: 'cena',     consumedAt: daysAgo(10) });
+
+    // ---------- día 11 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Pollo',    grams: 200, period: 'almuerzo', consumedAt: daysAgo(11) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Manzana',  grams: 120, period: 'merienda', consumedAt: daysAgo(11) });
+
+    // ---------- día 12 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Banana',   grams: 140, period: 'desayuno', consumedAt: daysAgo(12) });
+
+    // ---------- día 13 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Yogur',    grams: 180, period: 'desayuno', consumedAt: daysAgo(13) });
+    await registrarComidaConsumida({ userId: id, foodName: 'Arroz',    grams: 250, period: 'almuerzo', consumedAt: daysAgo(13) });
+
+    // ---------- día 14 ----------
+    await registrarComidaConsumida({ userId: id, foodName: 'Pollo',    grams: 200, period: 'almuerzo', consumedAt: daysAgo(14) });
+
+}
+
 // ---------- funciones de seed ---------- //
 async function seedAdmin0() {
   const id = await registerUser(
@@ -228,12 +291,7 @@ async function seedAdmin0() {
   await definirObjetivoUsuario({ userId: id, type: 'calories', goal: 2400 });
 
   // comidas (6)
-  await registrarComidaConsumida({ userId: id, foodName: 'Banana',  grams: 150, period: 'desayuno', consumedAt: daysAgo(0) });
-  await registrarComidaConsumida({ userId: id, foodName: 'Pollo',   grams: 200, period: 'almuerzo',  consumedAt: daysAgo(0) });
-  await registrarComidaConsumida({ userId: id, foodName: 'Manzana', grams: 120, period: 'merienda',  consumedAt: daysAgo(1) });
-  await registrarComidaConsumida({ userId: id, foodName: 'Arroz',   grams: 250, period: 'cena',      consumedAt: daysAgo(1) });
-  await registrarComidaConsumida({ userId: id, foodName: 'Yogur',   grams: 180, period: 'desayuno',  consumedAt: daysAgo(2) });
-  await registrarComidaConsumida({ userId: id, foodName: 'Pan integral', grams: 80, period: 'merienda', consumedAt: daysAgo(2) });
+  await registerUsers0FoodsEntries({id: id});
 
   // agua (4)
   await registrarConsumoAgua({ userId: id, liters: 0.7, consumedAt: daysAgo(0) });

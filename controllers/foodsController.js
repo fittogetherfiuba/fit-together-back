@@ -442,6 +442,53 @@ async function getAllNutrients(req, res) {
   }
 }
 
+//  Lista de comidas más frecuentes en los últimos 30 días para un período dado
+async function getTopFoodsByPeriodLastMonth(req, res) {
+  const { userId, period } = req.query;
+
+  if (!userId || !period) {
+    return res.status(400).json({ error: 'Faltan userId o period en la query' });
+  }
+
+  const allowedPeriods = ['desayuno', 'almuerzo', 'merienda', 'cena'];
+  if (!allowedPeriods.includes(period)) {
+    return res.status(400).json({ error: 'Periodo inválido' });
+  }
+
+  const now           = new Date();
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(now.getDate() - 30);
+  thirtyDaysAgo.setHours(0, 0, 0, 0);
+  const dateStr = thirtyDaysAgo.toISOString().slice(0, 10);
+
+  try {
+    const result = await pool.query(`
+      SELECT 
+        f.name AS food_name,
+        COUNT(*) AS occurrences
+      FROM user_food_entries e
+      JOIN foods f ON e.food_id = f.id
+      WHERE e.user_id      = $1
+        AND e.period       = $2
+        AND e.consumed_at >= $3::date
+      GROUP BY f.name
+      HAVING COUNT(*) >= 5          -- mínimo 5 veces en el mes
+      ORDER BY occurrences DESC     -- de mayor a menor
+      LIMIT 4                       -- máximo 4 resultados
+    `, [userId, period, dateStr]);
+
+    const foods = result.rows.map(r => r.food_name); 
+
+    return res.json({ foods });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error al obtener comidas frecuentes' });
+  }
+}
+
+module.exports = { getTopFoodsByPeriodLastMonth };
+
 module.exports = {  
         addConsumedFood, 
         addFood, 
@@ -450,5 +497,6 @@ module.exports = {
         getCaloriesConsumedThisWeek, 
         getFoods, 
         getUsersConsumedFoodsThisWeek, 
-        getAllNutrients 
+        getAllNutrients,
+        getTopFoodsByPeriodLastMonth
 };
