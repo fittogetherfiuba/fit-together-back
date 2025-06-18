@@ -15,7 +15,7 @@ router.post('/entry', addDoneActivity)
 router.get('', getActivities)
 router.get('/since-last-monday', getDoneActivitiesThisWeek)
 router.post('/estimate-calories', estimateCaloriesBurned);
-router.get('/frequent', getFrequentActivitiesLastMonth);
+router.get('/entries/frequent', getFrequentActivitiesLastMonth);
 router.get('/:type', getActivitiesByType);
 
 module.exports = router;
