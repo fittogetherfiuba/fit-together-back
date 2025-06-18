@@ -200,5 +200,58 @@ async function getActivitiesByType (req,res){
     }
 }
 
-module.exports = { getDoneActivities , addDoneActivity , getActivities, getDoneActivitiesThisWeek,
-    estimateCaloriesBurned, getActivitiesByType};
+// Actividades más frecuentes del último mes (máx. 4, mín. 4 repeticiones)
+async function getFrequentActivitiesLastMonth(req, res) {
+  const { userId, type } = req.query;    
+
+  if (!userId || !type) {
+    return res
+      .status(400)
+      .json({ error: 'Faltan parámetros userId y/o type en la query' });
+  }
+
+
+  const now = new Date();
+  const since = new Date(now);
+  since.setDate(now.getDate() - 30);
+  since.setHours(0, 0, 0, 0);
+  const sinceISO = since.toISOString(); 
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT a.name              AS activity_name,
+              COUNT(*)            AS times_done
+         FROM user_activity_entries uae
+         JOIN activities a
+           ON uae.activity_id = a.id
+        WHERE uae.user_id = $1
+          AND a.type     = $2
+          AND uae.performed_at >= $3
+        GROUP BY a.name
+       HAVING COUNT(*) >= 4                 
+        ORDER BY times_done DESC           
+        LIMIT 4`,                          
+      [userId, type, sinceISO]
+    );
+
+    // Solo necesitamos la lista de nombres
+    const activities = rows.map(r => r.activity_name);
+
+    return res.json(activities);
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: 'Error al obtener actividades más frecuentes del mes' });
+  }
+}
+
+
+module.exports = { getDoneActivities,
+    addDoneActivity,
+    getActivities,
+    getDoneActivitiesThisWeek,
+    estimateCaloriesBurned,
+    getActivitiesByType,
+    getFrequentActivitiesLastMonth
+};

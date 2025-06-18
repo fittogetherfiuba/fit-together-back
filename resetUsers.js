@@ -277,6 +277,47 @@ async function registerUsers0FoodsEntries({id}){
 
 }
 
+async function registerUsers0ActivitiesEntries({id}) {
+  // ===== CARDIO (17 nuevas) =====
+await registrarActividadRealizada({ userId: id, activityName: 'Correr',     durationMinutes: 28, distanceKm: 5,  performedAt: daysAgo(4),  caloriesBurned: 160 });
+await registrarActividadRealizada({ userId: id, activityName: 'Correr',     durationMinutes: 30, distanceKm: 6,  performedAt: daysAgo(6),  caloriesBurned: 180 });
+await registrarActividadRealizada({ userId: id, activityName: 'Correr',     durationMinutes: 27, distanceKm: 5,  performedAt: daysAgo(10), caloriesBurned: 165 });
+await registrarActividadRealizada({ userId: id, activityName: 'Correr',     durationMinutes: 32, distanceKm: 6,  performedAt: daysAgo(15), caloriesBurned: 190 });
+await registrarActividadRealizada({ userId: id, activityName: 'Correr',     durationMinutes: 29, distanceKm: 5,  performedAt: daysAgo(20), caloriesBurned: 170 });
+
+await registrarActividadRealizada({ userId: id, activityName: 'Burpees',    durationMinutes: 15,                    performedAt: daysAgo(0),  caloriesBurned: 120 });
+await registrarActividadRealizada({ userId: id, activityName: 'Burpees',    durationMinutes: 14,                    performedAt: daysAgo(5),  caloriesBurned: 115 });
+await registrarActividadRealizada({ userId: id, activityName: 'Burpees',    durationMinutes: 16,                    performedAt: daysAgo(12), caloriesBurned: 125 });
+await registrarActividadRealizada({ userId: id, activityName: 'Burpees',    durationMinutes: 17,                    performedAt: daysAgo(22), caloriesBurned: 130 });
+
+await registrarActividadRealizada({ userId: id, activityName: 'Nadar',      durationMinutes: 40, distanceKm: 1,    performedAt: daysAgo(8),  caloriesBurned: 200 });
+await registrarActividadRealizada({ userId: id, activityName: 'Nadar',      durationMinutes: 38, distanceKm: 1,    performedAt: daysAgo(14), caloriesBurned: 190 });
+await registrarActividadRealizada({ userId: id, activityName: 'Nadar',      durationMinutes: 42, distanceKm: 1.1,  performedAt: daysAgo(18), caloriesBurned: 205 });
+await registrarActividadRealizada({ userId: id, activityName: 'Nadar',      durationMinutes: 41, distanceKm: 1,    performedAt: daysAgo(25), caloriesBurned: 200 });
+
+await registrarActividadRealizada({ userId: id, activityName: 'Bicicleta',  durationMinutes: 60, distanceKm: 18,   performedAt: daysAgo(7),  caloriesBurned: 350 });
+await registrarActividadRealizada({ userId: id, activityName: 'Bicicleta',  durationMinutes: 55, distanceKm: 16,   performedAt: daysAgo(11), caloriesBurned: 330 });
+await registrarActividadRealizada({ userId: id, activityName: 'Bicicleta',  durationMinutes: 62, distanceKm: 19,   performedAt: daysAgo(17), caloriesBurned: 360 });
+await registrarActividadRealizada({ userId: id, activityName: 'Bicicleta',  durationMinutes: 58, distanceKm: 17,   performedAt: daysAgo(28), caloriesBurned: 340 });
+
+// ===== MUSCULACIÓN (13 nuevas) =====
+await registrarActividadRealizada({ userId: id, activityName: 'Flexiones',  series: 4, repetitions: 12, performedAt: daysAgo(3),  caloriesBurned: 90  });
+await registrarActividadRealizada({ userId: id, activityName: 'Flexiones',  series: 5, repetitions: 10, performedAt: daysAgo(9),  caloriesBurned: 95  });
+await registrarActividadRealizada({ userId: id, activityName: 'Flexiones',  series: 4, repetitions: 12, performedAt: daysAgo(13), caloriesBurned: 90  });
+await registrarActividadRealizada({ userId: id, activityName: 'Flexiones',  series: 5, repetitions: 11, performedAt: daysAgo(19), caloriesBurned: 100 });
+await registrarActividadRealizada({ userId: id, activityName: 'Flexiones',  series: 4, repetitions: 12, performedAt: daysAgo(24), caloriesBurned: 95  });
+await registrarActividadRealizada({ userId: id, activityName: 'Flexiones',  series: 5, repetitions: 12, performedAt: daysAgo(29), caloriesBurned: 100 });
+
+await registrarActividadRealizada({ userId: id, activityName: 'Sentadillas',series: 4, repetitions: 12, performedAt: daysAgo(5),  caloriesBurned: 110 });
+await registrarActividadRealizada({ userId: id, activityName: 'Sentadillas',series: 4, repetitions: 12, performedAt: daysAgo(16), caloriesBurned: 115 });
+await registrarActividadRealizada({ userId: id, activityName: 'Sentadillas',series: 4, repetitions: 12, performedAt: daysAgo(23), caloriesBurned: 110 });
+
+await registrarActividadRealizada({ userId: id, activityName: 'Plancha',    series: 4, repetitions: 45, performedAt: daysAgo(6),  caloriesBurned: 80  });
+await registrarActividadRealizada({ userId: id, activityName: 'Plancha',    series: 4, repetitions: 50, performedAt: daysAgo(12), caloriesBurned: 85  });
+await registrarActividadRealizada({ userId: id, activityName: 'Plancha',    series: 4, repetitions: 45, performedAt: daysAgo(21), caloriesBurned: 80  });
+await registrarActividadRealizada({ userId: id, activityName: 'Plancha',    series: 5, repetitions: 50, performedAt: daysAgo(26), caloriesBurned: 90  });
+}
+
 // ---------- funciones de seed ---------- //
 async function seedAdmin0() {
   const id = await registerUser(
@@ -300,10 +341,7 @@ async function seedAdmin0() {
   await registrarConsumoAgua({ userId: id, liters: 1.2, consumedAt: daysAgo(3) });
 
   // actividades (4)
-  await registrarActividadRealizada({ userId: id, activityName: 'Caminar',    durationMinutes: 40, distanceKm: 3, performedAt: daysAgo(0), caloriesBurned: 100 });
-  await registrarActividadRealizada({ userId: id, activityName: 'Correr',     durationMinutes: 25, distanceKm: 5, performedAt: daysAgo(1), caloriesBurned: 150 });
-  await registrarActividadRealizada({ userId: id, activityName: 'Sentadillas', series: 4, repetitions: 12, performedAt: daysAgo(2), caloriesBurned: 200 });
-  await registrarActividadRealizada({ userId: id, activityName: 'Yoga',       durationMinutes: 60, performedAt: daysAgo(3), caloriesBurned: 10 });
+  await registerUsers0ActivitiesEntries({id: id});
 }
 
 async function seedAdmin1() {
