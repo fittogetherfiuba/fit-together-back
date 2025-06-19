@@ -1,32 +1,69 @@
 const pool = require('../db');
 const { toCamelCase } = require('../utils');
 
-// Obtener notificaciones del día actual para un usuario
+// Obtener notificaciones del día actual para un usuario y marcarlas como leídas
 async function getNotifications(req, res) {
-  const { userId } = req.query;
+    const { userId } = req.query;
+  
+    if (!userId) {
+      return res.status(400).json({ error: 'Falta userId' });
+    }
+  
+    try {
+      const result = await pool.query(
+        `
+        SELECT * FROM notifications
+        WHERE user_id = $1
+        AND created_at::date = CURRENT_DATE
+        ORDER BY created_at DESC
+        `,
+        [userId]
+      );
+  
+      // Marcar como leídas todas las notificaciones de hoy
+      await pool.query(
+        `
+        UPDATE notifications
+        SET read = true
+        WHERE user_id = $1 AND created_at::date = CURRENT_DATE
+        `,
+        [userId]
+      );
+  
+      const notifications = result.rows.map(toCamelCase);
+      res.json({ notifications });
+    } catch (err) {
+      console.error('[getNotifications] Error al obtener notificaciones:', err);
+      res.status(500).json({ error: 'Error al obtener notificaciones del usuario' });
+    }
+}  
 
-  if (!userId) {
-    return res.status(400).json({ error: 'Falta userId' });
+// Verificar si el usuario tiene notificaciones no leídas del día actual
+async function hasUnreadNotifiactions(req, res) {
+    const { userId } = req.params;
+  
+    if (!userId) {
+      return res.status(400).json({ error: 'Falta userId' });
+    }
+  
+    try {
+      const result = await pool.query(
+        `
+        SELECT 1 FROM notifications
+        WHERE user_id = $1 AND read = false AND created_at::date = CURRENT_DATE
+        LIMIT 1
+        `,
+        [userId]
+      );
+  
+      const hasUnread = result.rowCount > 0;
+      res.json({ hasUnread });
+    } catch (err) {
+      console.error('[hasUnreadNotificationsToday] Error:', err);
+      res.status(500).json({ error: 'Error al verificar notificaciones no leídas' });
+    }
   }
-
-  try {
-    const result = await pool.query(
-      `
-      SELECT * FROM notifications
-      WHERE user_id = $1
-      AND created_at::date = CURRENT_DATE
-      ORDER BY created_at DESC
-      `,
-      [userId]
-    );
-
-    const notifications = result.rows.map(toCamelCase);
-    res.json({ notifications });
-  } catch (err) {
-    console.error('[getNotifications] Error al obtener notificaciones:', err);
-    res.status(500).json({ error: 'Error al obtener notificaciones del usuario' });
-  }
-}
+  
 
 // Crear una nueva notificación
 async function createNotification(req, res) {
@@ -103,5 +140,9 @@ module.exports = {
 };
 
 module.exports = {
-    getNotifications, createNotification, deleteNotification, deleteAllNotifications
+    getNotifications, 
+    createNotification, 
+    deleteNotification, 
+    deleteAllNotifications,
+    hasUnreadNotifiactions
 };

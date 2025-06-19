@@ -231,3 +231,8 @@ curl --location --request DELETE 'http://localhost:3000/api/notifications/delete
 ```bash
 curl --location --request DELETE 'http://localhost:3000/api/notifications/delete_all/1'
 ```
+
+## Ver si un usuario tiene notificaciones no leidas
+```bash
+curl --location 'http://localhost:3000/api/notifications/has_unread/1'
+```
