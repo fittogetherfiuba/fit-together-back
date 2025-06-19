@@ -206,3 +206,28 @@ curl -X GET http://localhost:3000/api/communities/posts/1/comments \
 ```bash
 curl --location 'http://localhost:3000/api/communities/topics'
 ```
+
+## Obtener notificaciones del dia de un usuario
+```bash
+curl --location --request GET 'http://localhost:3000/api/notifications?userId=1'
+```
+
+## Crear una notificacion
+```bash
+curl --location --request POST 'http://localhost:3000/api/notifications/create' \
+--header 'Content-Type: application/json' \
+--data '{
+  "user_id": 1,
+  "message": "¡Recordá hidratarte hoy!"
+}'
+```
+
+## Borrar una notificacion
+```bash
+curl --location --request DELETE 'http://localhost:3000/api/notifications/delete/5'
+```
+
+## Borrar todas las notificaciones de un usuario
+```bash
+curl --location --request DELETE 'http://localhost:3000/api/notifications/delete_all/1'
+```

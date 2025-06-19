@@ -464,3 +464,10 @@ VALUES
 ('Progreso semanal'),
 ('Recomendaciones de IA'),
 ('Menu sugerido');
+
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
