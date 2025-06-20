@@ -64,31 +64,44 @@ async function hasUnreadNotifiactions(req, res) {
     }
   }
   
-
-// Crear una nueva notificación
+// Crear una nueva notificación usando user_id o username
 async function createNotification(req, res) {
-  const { user_id, message } = req.body;
-
-  if (!user_id || !message) {
-    return res.status(400).json({ error: 'Faltan campos requeridos: user_id o message' });
-  }
-
-  try {
-    const result = await pool.query(
-      `
-      INSERT INTO notifications (user_id, message)
-      VALUES ($1, $2)
-      RETURNING *
-      `,
-      [user_id, message]
-    );
-
-    res.status(201).json({ notification: toCamelCase(result.rows[0]) });
-  } catch (err) {
-    console.error('[createNotification] Error al crear notificación:', err);
-    res.status(500).json({ error: 'Error al crear notificación' });
-  }
-}
+    let { user_id, username, message } = req.body;
+  
+    if (!message || (!user_id && !username)) {
+      return res.status(400).json({ error: 'Faltan campos requeridos: message y user_id o username' });
+    }
+  
+    try {
+      // Si no viene user_id pero sí username, buscarlo
+      if (!user_id && username) {
+        const userResult = await pool.query(
+          `SELECT id FROM users WHERE username = $1`,
+          [username]
+        );
+  
+        if (userResult.rowCount === 0) {
+          return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+  
+        user_id = userResult.rows[0].id;
+      }
+  
+      const result = await pool.query(
+        `
+        INSERT INTO notifications (user_id, message)
+        VALUES ($1, $2)
+        RETURNING *
+        `,
+        [user_id, message]
+      );
+  
+      res.status(201).json({ notification: toCamelCase(result.rows[0]) });
+    } catch (err) {
+      console.error('[createNotification] Error al crear notificación:', err);
+      res.status(500).json({ error: 'Error al crear notificación' });
+    }
+  }  
 
 // Borrar una notificación por ID
 async function deleteNotification(req, res) {
