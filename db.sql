@@ -106,7 +106,18 @@ INSERT INTO activities (name, created_by_user_id, type, calories_burn_rate) VALU
 ('Plancha', NULL, 'musculacion', 6),
 ('Burpees', NULL, 'cardio', 7),
 ('Abdominales', NULL, 'musculacion', 3),
-('Yoga', NULL, 'cardio', 1);
+('Yoga', NULL, 'cardio', 1),
+('Biceps', NULL, 'musculacion', 4),
+('Triceps', NULL, 'musculacion', 4),
+('Espalda', NULL, 'musculacion', 5),
+('Pecho', NULL, 'musculacion', 5),
+('Hombros', NULL, 'musculacion', 4),
+('Piernas', NULL, 'musculacion', 6);
+('Eliptica', NULL, 'cardio', 15),
+('Remo', NULL, 'cardio', 18),
+('Escaladora', NULL, 'cardio', 17),
+('Boxeo', NULL, 'cardio', 22),
+('HIIT', NULL, 'cardio', 25);
 
 -- Entradas de actividades realizadas por usuario
 CREATE TABLE user_activity_entries (

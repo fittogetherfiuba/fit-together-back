@@ -1,66 +1,136 @@
-// ResetUsers/seedSofia.js
+// seedSofia.js
+// Seeder para usuario Sofia: crea el usuario y le agrega entradas de comida, actividad, agua, recetas, comunidad y posteos.
+
+const pool = require('../db');
 const bcrypt = require('bcrypt');
-const pool   = require('../db');          // Ajusta si tu conexión vive en otro path
+const {
+  daysAgo,
+  addConsumedFood,
+  addConsumedWater,
+  addDoneActivity,
+  createRecipe,
+  createCommunity,
+  createPost
+} = require('./userCreation');
 
-const SALT_ROUNDS = 10;
-const PASSWORD    = 'administrador';
-const EMAIL       = 'sofia@admin.com';
-const TODAY       = () => new Date(Date.now()).toISOString();
-const daysAgoUTC  = d => new Date(Date.now() - d * 86_400_000).toISOString();
+async function seedSofia() {
+  // 1. Crear usuario Sofia
+  const email = 'sofia@admin.com';
+  const username = 'sofia';
+  const rawPassword = 'testeo';
+  const hashed = await bcrypt.hash(rawPassword, 10);
 
-module.exports = async function seedSofia () {
-  // ── 1 · Alta (o actualización) del usuario
-  const passHash = await bcrypt.hash(PASSWORD, SALT_ROUNDS);
-  const { rows } = await pool.query(
-    `INSERT INTO users (email, username, password, fullname, registrationday, verified)
-     VALUES ($1, $2, $3, $4, $5, true)
-     ON CONFLICT (email) DO UPDATE SET password = EXCLUDED.password
+  const { rows: userRows } = await pool.query(
+    `INSERT INTO users (email, username, password)
+     VALUES ($1, $2, $3)
      RETURNING id`,
-    [EMAIL, 'sofia', passHash, 'Sofia', TODAY()]
+    [email, username, hashed]
   );
-  const userId = rows[0].id;
+  const userId = userRows[0].id;
+  console.log(`Usuario Sofia creado con id=${userId}`);
 
-  // ── 2 · Objetivos
-  await pool.query(
-    `INSERT INTO user_goals (user_id, type, goal_value)
-     VALUES  ($1, 'water', 2500),
-             ($1, 'calories', 2200)
-     ON CONFLICT (user_id, type) DO UPDATE SET goal_value = EXCLUDED.goal_value`,
-    [userId]
-  );
+  // 2. Entradas de comida: 60 en últimos 30 días, perfil saludable sin carnes
+  const foodOptions = [
+    'Banana','Manzana','Lechuga','Tomate','Zanahoria',
+    'Avena','Yogur','Arroz','Lentejas','Pan integral','Aceite de oliva','Pasta'
+  ];
+  const periods = ['desayuno','almuerzo','merienda','cena'];
+  for (let i = 0; i < 80; i++) {
+    const foodName = foodOptions[Math.floor(Math.random() * foodOptions.length)];
+    const grams    = Math.floor(Math.random() * 200) + 50;       // 50-249 g
+    const period   = periods[Math.floor(Math.random() * periods.length)];
+    const consumedAt = daysAgo(Math.floor(Math.random() * 30));  // en el rango 0-29 días atrás
+    await addConsumedFood({ userId, foodName, grams, consumedAt, period });
+  }
+  console.log('✅ 60 entradas de comida agregadas');
 
-  // ── 3 · Entradas de agua (7 días)
-  const waterValues = Array.from({ length: 7 }, (_, i) =>
-    `(${userId}, 400, '${daysAgoUTC(i)}')`
-  ).join(',');
-  await pool.query(
-    `INSERT INTO water_entries (user_id, ml, created_at) VALUES ${waterValues}`
-  );
+  // 3. Entradas de actividad: 15, principalmente cardio
+  const activityOptions = ['Correr','Caminar','Bicicleta','Nadar','Hombros'];
+  for (let i = 0; i < 15; i++) {
+    const name = activityOptions[Math.floor(Math.random() * activityOptions.length)];
+    const duration = Math.floor(Math.random() * 60) + 20;                // 20-79 min
+    const distance = ['Correr','Caminar'].includes(name)
+      ? +(Math.random() * 5 + 1).toFixed(1)                               // 1.0-6.0 km
+      : null;
+    const performedAt = daysAgo(Math.floor(Math.random() * 30));
+    await addDoneActivity({
+      userId,
+      activityName: name,
+      durationMinutes: duration,
+      distanceKm: distance,
+      series: null,
+      repetitions: null,
+      performedAt
+    });
+  }
+  console.log('✅ 15 entradas de actividad agregadas');
 
-  // ── 4 · Entradas de comida (40)
-  const foodIds = (await pool.query(`SELECT id FROM foods LIMIT 10`)).rows.map(r => r.id);
-  const periods = ['desayuno', 'almuerzo', 'merienda', 'cena'];
-  const foodValues = Array.from({ length: 40 }, (_, i) => {
-    const date  = daysAgoUTC(i % 7);
-    const grams = 100 + (i % 4) * 50;              // 100-250 g
-    const food  = foodIds[i % foodIds.length];
-    const per   = periods[i % periods.length];
-    return `(${userId}, ${food}, ${grams}, '${per}', '${date}')`;
-  }).join(',');
-  await pool.query(
-    `INSERT INTO user_food_entries
-       (user_id, food_id, grams, period, created_at)
-     VALUES ${foodValues}`
-  );
+  // 4. Entradas de agua: 30 días, 1.5-2.5 L diarias
+  for (let d = 0; d < 30; d++) {
+    const consumedAt = daysAgo(d);
+    const liters = +(Math.random() * (2.5 - 1.5) + 1.5).toFixed(2);
+    await addConsumedWater({ userId, liters, consumedAt });
+  }
+  console.log('✅ 30 entradas de agua agregadas');
 
-  // ── 5 · Actividades (4)
-  const actIds = (await pool.query(`SELECT id FROM activities LIMIT 4`)).rows.map(r => r.id);
-  const actValues = actIds.map((id, i) =>
-    `(${userId}, ${id}, ${30 + i * 10}, NULL, NULL, '${daysAgoUTC(i)}')`
-  ).join(',');
-  await pool.query(
-    `INSERT INTO user_activity_entries
-       (user_id, activity_id, minutes, sets, reps, created_at)
-     VALUES ${actValues}`
-  );
-};
+  // 5. Recetas de ejemplo
+  // Obtener mapeo de food names a IDs
+  const { rows: foods } = await pool.query('SELECT id, name FROM foods');
+  const mapId = {};
+  foods.forEach(f => { mapId[f.name] = f.id; });
+
+  // Ensalada vegetal
+  await createRecipe({
+    userId,
+    username,
+    name: 'Ensalada Vegetal',
+    items: [
+      { foodId: mapId['Lechuga'], grams: 80 },
+      { foodId: mapId['Tomate'], grams: 60 },
+      { foodId: mapId['Zanahoria'], grams: 50 },
+      { foodId: mapId['Aceite de oliva'], grams: 10 }
+    ],
+    steps: 'Mezclar todos los ingredientes y aliñar al gusto.',
+    pic: null
+  });
+
+  // Smoothie de avena y yogur
+  await createRecipe({
+    userId,
+    username,
+    name: 'Smoothie Avena y Yogur',
+    items: [
+      { foodId: mapId['Avena'], grams: 50 },
+      { foodId: mapId['Yogur'], grams: 150 }
+    ],
+    steps: 'Licuar avena con yogur y servir frío.',
+    pic: null
+  });
+  console.log('✅ 2 recetas creadas');
+
+  // 6. Comunidad y posteo
+  const community = await createCommunity({
+    userId,
+    name: 'Healthy Community',
+    description: 'Comunidad para compartir consejos de vida saludable.'
+  });
+  await createPost({
+    userId,
+    communityId: community.id,
+    title: '¡Bienvenida a Healthy Community!',
+    body: 'Aquí compartiremos rutinas de cardio y recetas saludables.',
+    topic: 'Salud',
+    photos: []
+  });
+  console.log('✅ Comunidad y primer posteo creados');
+
+  console.log('🎉 Seed Sofia completado.');
+}
+
+// Ejecutar directamente
+seedSofia()
+  .then(() => process.exit(0))
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
