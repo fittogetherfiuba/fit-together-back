@@ -154,7 +154,7 @@ async function getRecipes(req, res) {
           username: recipe.username,
           name: recipe.name,
           userId: recipe.user_id,
-          totalCalories: Number(recipe.total_calories),
+          totalCalories: Math.ceil(Number(recipe.total_calories)),
           steps: recipe.steps,
           createdAt: recipe.created_at,
           pic: recipe.pic,

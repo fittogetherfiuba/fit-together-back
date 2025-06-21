@@ -185,6 +185,7 @@ async function getUsersConsumedFoods(req, res) {
 
       return {
         ...toCamelCase(entry),
+        calories: Math.ceil(Number(entry.calories)),
         nutrients
       };
     });
