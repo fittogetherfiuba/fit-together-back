@@ -34,6 +34,7 @@ const recipesRoutes   = require('./routes/recipes');
 const friendsRoutes   = require('./routes/friends');
 const communitiesRoutes   = require('./routes/communities');
 const dietRoutes         = require('./routes/diet')
+const notificationsRoutes         = require('./routes/notifications')
 
 const app = express();
 app.use(cors());
@@ -50,6 +51,7 @@ app.use('/api/recipes',     recipesRoutes)
 app.use('/api/friends',   friendsRoutes);
 app.use('/api/communities',   communitiesRoutes);
 app.use('/api/diet',        dietRoutes);
+app.use('/api/notifications',     notificationsRoutes);
 
 app.get('/api/ping', (req, res) => {
     res.json({ message: 'pong' });

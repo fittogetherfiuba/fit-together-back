@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { addCommunity , getCommunities, getAllCommunities, subscribeToCommunity, createPost, updatePost, getCommunityPosts, getPostById, addComment, getComments, getTopics, getCommunityMembers} = require('../controllers/communitiesController');
-const { route } = require('./communities');
 
 router.post('/create', addCommunity)
 router.get('', getCommunities)
