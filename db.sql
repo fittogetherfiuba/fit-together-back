@@ -65,7 +65,7 @@ INSERT INTO foods (name, created_by_user_id, calories_per_100g) VALUES
 ('Lechuga',           NULL,  15),
 ('Zanahoria',         NULL,  41),
 ('Papa',              NULL,  77),
-('Brócoli',           NULL,  34),
+('Brocoli',           NULL,  34),
 ('Naranja',           NULL,  47),
 ('Frutilla',          NULL,  33),
 ('Cereal de desayuno',NULL, 375),

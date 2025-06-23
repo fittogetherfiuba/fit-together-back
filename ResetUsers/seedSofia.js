@@ -29,38 +29,87 @@ async function seedSofia() {
   const userId = userRows[0].id;
   console.log(`Usuario Sofia creado con id=${userId}`);
 
-  // 2. Entradas de comida: 60 en últimos 30 días, perfil saludable sin carnes
-  const foodOptions = [
-    'Banana','Manzana','Lechuga','Tomate','Zanahoria',
-    'Avena','Yogur','Arroz','Lentejas','Pan integral','Aceite de oliva','Pasta'
+
+  const periods = ['desayuno', 'almuerzo', 'merienda', 'cena'];
+  const desayunoOptions = [
+    'Banana', 'Manzana', 'Avena', 'Pan integral', 'Yogur', 'Jugo de naranja'
   ];
-  const periods = ['desayuno','almuerzo','merienda','cena'];
-  for (let i = 0; i < 80; i++) {
-    const foodName = foodOptions[Math.floor(Math.random() * foodOptions.length)];
-    const grams    = Math.floor(Math.random() * 200) + 50;       // 50-249 g
-    const period   = periods[Math.floor(Math.random() * periods.length)];
-    const consumedAt = daysAgo(Math.floor(Math.random() * 30));  // en el rango 0-29 días atrás
-    await addConsumedFood({ userId, foodName, grams, consumedAt, period });
+  const almuerzoOptions = [
+    'Arroz', 'Lentejas', 'Pasta', 'Tomate', 'Lechuga', 'Zanahoria', 'Papa', 'Brocoli'
+  ];
+  const meriendaOptions = [
+    'Banana', 'Manzana', 'Frutilla', 'Chocolate negro', 'Yogur', 'Jugo de naranja'
+  ];
+  const cenaOptions = [
+    'Arroz', 'Lentejas', 'Pasta', 'Tomate', 'Lechuga', 'Zanahoria', 'Papa', 'Brocoli'
+  ];
+  const periodOptions = [desayunoOptions, almuerzoOptions, meriendaOptions, cenaOptions]
+
+  for (let i = 0; i < periodOptions.length; i ++){
+    const foodOptions = periodOptions[i]
+    const period = periods[i]
+    for (let j = 0; j < 30; j++) {
+      const foodName = foodOptions[Math.floor(Math.random() * foodOptions.length)];
+      const grams    = Math.floor(Math.random() * 200) + 50;       // 50-249 g
+      const consumedAt = daysAgo(Math.floor(Math.random() * 30));  // en el rango 0-29 días atrás
+      await addConsumedFood({ userId, foodName, grams, consumedAt, period });
+    }
   }
-  console.log('✅ 60 entradas de comida agregadas');
+  console.log('✅ 30 * 4 entradas de comida agregadas');
 
   // 3. Entradas de actividad: 15, principalmente cardio
   const activityOptions = ['Correr','Caminar','Bicicleta','Nadar','Hombros'];
   for (let i = 0; i < 15; i++) {
     const name = activityOptions[Math.floor(Math.random() * activityOptions.length)];
-    const duration = Math.floor(Math.random() * 60) + 20;                // 20-79 min
-    const distance = ['Correr','Caminar'].includes(name)
-      ? +(Math.random() * 5 + 1).toFixed(1)                               // 1.0-6.0 km
-      : null;
-    const performedAt = daysAgo(Math.floor(Math.random() * 30));
+
+    const result = await pool.query(
+    `SELECT type, calories_burn_rate
+    FROM activities
+    WHERE name = $1
+    LIMIT 1`,
+        [name]
+    );
+    if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Actividad no encontrada' });
+    }
+   
+    const { type: type, calories_burn_rate: rate } = result.rows[0];  
+    let durationMinutes = null;
+    let distanceKm      = null;
+    let series          = null;
+    let repetitions     = null;
+    let caloriesBurned  = null;
+
+    function getRandomIntInclusive(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    switch (type) {
+      case 'cardio':
+        durationMinutes = getRandomIntInclusive(20, 79); // 20–79 min
+        distanceKm      = getRandomIntInclusive(1, 7);   // 1–7 km
+        caloriesBurned  = rate * durationMinutes;
+        break;
+
+      case 'musculacion':
+        repetitions    = getRandomIntInclusive(5, 14);  // 5–14 reps
+        series         = getRandomIntInclusive(2, 4);   // 2–4 series
+        caloriesBurned = rate * repetitions;
+        break;
+
+      default:
+        console.warn(`Tipo desconocido: ${type}`);
+    }
+    const performedAt = daysAgo(getRandomIntInclusive(0, 29));
+
     await addDoneActivity({
       userId,
-      activityName: name,
-      durationMinutes: duration,
-      distanceKm: distance,
-      series: null,
-      repetitions: null,
-      performedAt
+      activityName    : name,
+      durationMinutes,
+      distanceKm,
+      series,
+      repetitions,
+      performedAt,
+      calories_burned : caloriesBurned
     });
   }
   console.log('✅ 15 entradas de actividad agregadas');

@@ -59,13 +59,6 @@ async function cleanDatabase() {
       DELETE FROM diet_profiles
       WHERE created_by_user_id IS NOT NULL;
 
-
-
-
-
-
-
-
       -- -----------------------
       -- Reiniciar secuencia de usuarios para que el próximo ID sea 1
       -- -----------------------

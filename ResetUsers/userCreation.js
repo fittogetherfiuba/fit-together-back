@@ -31,7 +31,7 @@ async function addConsumedFood({ userId, foodName, grams, consumedAt = new Date(
       throw new Error('period inválido. Debe ser desayuno, almuerzo, merienda o cena');
     }
   }
-
+  console.log (`Agregando comida: ${foodName}, gramos: ${grams}, periodo: ${normalizedPeriod || 'no especificado'}, consumido en: ${consumedAt}`);
   const foodRes = await pool.query(
     'SELECT id, calories_per_100g FROM foods WHERE LOWER(name) = LOWER($1) LIMIT 1',
     [foodName.trim()]
