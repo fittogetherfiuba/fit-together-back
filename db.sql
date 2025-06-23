@@ -112,7 +112,7 @@ INSERT INTO activities (name, created_by_user_id, type, calories_burn_rate) VALU
 ('Espalda', NULL, 'musculacion', 5),
 ('Pecho', NULL, 'musculacion', 5),
 ('Hombros', NULL, 'musculacion', 4),
-('Piernas', NULL, 'musculacion', 6);
+('Piernas', NULL, 'musculacion', 6),
 ('Eliptica', NULL, 'cardio', 15),
 ('Remo', NULL, 'cardio', 18),
 ('Escaladora', NULL, 'cardio', 17),
@@ -391,7 +391,7 @@ INSERT INTO diet_profiles (id, name, created_by_user_id) VALUES
 (26, 'no come Lechuga', NULL),
 (27, 'no come Zanahoria', NULL),
 (28, 'no come Papa', NULL),
-(29, 'no come Brócoli', NULL),
+(29, 'no come Brocoli', NULL),
 (30, 'no come Naranja', NULL),
 (31, 'no come Frutilla', NULL),
 (32, 'no come Cereal de desayuno', NULL),
