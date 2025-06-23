@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "resetUsers-db": "node ResetUsers/resetScript.js",
+    "resetUsers-db": "node ResetUsers/resetScript.js && node ResetUsers/seedSofia.js && node ResetUsers/seedRaul.js",
     "usuario-sofia": "node ResetUsers/seedSofia.js",
     "usuario-raul": "node ResetUsers/seedRaul.js",
     "usuario-todos": "node ResetUsers/seedSofia && node ResetUsers/seedRaul",
