@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "resetUsers-db": "node ResetUsers/resetScript.js",
+    "usuario-sofia": "node ResetUsers/seedSofia.js",
+    "usuario-raul": "node ResetUsers/seedRaul.js",
+    "usuario-todos": "node ResetUsers/seedSofia && node ResetUsers/seedRaul",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

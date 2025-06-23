@@ -1,7 +1,7 @@
 // seedRaul.js
 // Seeder para usuario Raúl: crea el usuario y le agrega entradas de comida, actividad, agua, recetas, comunidad y posteos.
 
-const pool = require('../fit-together-back/db');
+const pool = require('../db');
 const bcrypt = require('bcrypt');
 const {
   daysAgo,
@@ -28,38 +28,94 @@ async function seedRaul() {
   const userId = userRows[0].id;
   console.log(`Usuario Raúl creado con id=${userId}`);
 
-  // Entradas de comida: 60 en últimos 30 días, perfil jubilado (diario equilibrado)
-  const foodOptions = [
-    'Pescado','Lentejas','Arroz','Pan integral','Leche',
-    'Yogur','Manzana','Banana','Avena','Zanahoria'
+  const periods = ['desayuno', 'almuerzo', 'merienda', 'cena'];
+  const desayunoOptions = [
+    'Leche', 'Pan integral'
   ];
-  const periods = ['desayuno','almuerzo','merienda','cena'];
-  for (let i = 0; i < 60; i++) {
-    const foodName = foodOptions[Math.floor(Math.random() * foodOptions.length)];
-    const grams    = Math.floor(Math.random() * 200) + 50;
-    const period   = periods[Math.floor(Math.random() * periods.length)];
-    const consumedAt = daysAgo(Math.floor(Math.random() * 30));
-    await addConsumedFood({ userId, foodName, grams, consumedAt, period });
-  }
-  console.log('✅ 60 entradas de comida agregadas para Raúl');
+  const almuerzoOptions = [
+    'Carne vacuna', 'Carne de cerdo', 'Pasta'
+  ];
+  const meriendaOptions = [
+    'Yogur'
+  ];
+  const cenaOptions = [
+    'Carne vacuna', 'Carne de cerdo', 'Pasta', 'Chocolate negro'
+  ];
+  const periodOptions = [desayunoOptions, almuerzoOptions, meriendaOptions, cenaOptions]
 
-  // Entradas de actividad: 15, actividades ligeras
-  const activityOptions = ['Caminar','Yoga','Pilates','Natación','Bicicleta'];
-  for (let i = 0; i < 15; i++) {
-    const name = activityOptions[Math.floor(Math.random() * activityOptions.length)];
-    const duration = Math.floor(Math.random() * 40) + 20;  // 20-59 min
-    const distance = ['Caminar','Bicicleta','Natación'].includes(name)
-      ? +(Math.random() * 3 + 0.5).toFixed(1)
-      : null;
-    const performedAt = daysAgo(Math.floor(Math.random() * 30));
-    await addDoneActivity({ userId, activityName: name, durationMinutes: duration, distanceKm: distance, series: null, repetitions: null, performedAt });
+  for (let i = 0; i < periodOptions.length; i ++){
+    const foodOptions = periodOptions[i]
+    const period = periods[i]
+    for (let j = 0; j < 25; j++) {
+      const foodName = foodOptions[Math.floor(Math.random() * foodOptions.length)];
+      const grams    = Math.floor(Math.random() * 200) + 50;       // 50-249 g
+      const consumedAt = daysAgo(Math.floor(Math.random() * 30));  // en el rango 0-29 días atrás
+      await addConsumedFood({ userId, foodName, grams, consumedAt, period });
+    }
   }
-  console.log('✅ 15 entradas de actividad agregadas para Raúl');
+  console.log('✅ 25 * 4 entradas de comida agregadas');
+
+  // 3. Entradas de actividad: 10
+  const activityOptions = ['Caminar','Bicicleta'];
+  for (let i = 0; i < 10; i++) {
+    const name = activityOptions[Math.floor(Math.random() * activityOptions.length)];
+
+    const result = await pool.query(
+    `SELECT type, calories_burn_rate
+    FROM activities
+    WHERE name = $1
+    LIMIT 1`,
+        [name]
+    );
+    if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Actividad no encontrada' });
+    }
+   
+    const { type: type, calories_burn_rate: rate } = result.rows[0];  
+    let durationMinutes = null;
+    let distanceKm      = null;
+    let series          = null;
+    let repetitions     = null;
+    let caloriesBurned  = null;
+
+    function getRandomIntInclusive(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    switch (type) {
+      case 'cardio':
+        durationMinutes = getRandomIntInclusive(20, 79); // 20–79 min
+        distanceKm      = getRandomIntInclusive(1, 7);   // 1–7 km
+        caloriesBurned  = rate * durationMinutes;
+        break;
+
+      case 'musculacion':
+        repetitions    = getRandomIntInclusive(5, 14);  // 5–14 reps
+        series         = getRandomIntInclusive(2, 4);   // 2–4 series
+        caloriesBurned = rate * repetitions;
+        break;
+
+      default:
+        console.warn(`Tipo desconocido: ${type}`);
+    }
+    const performedAt = daysAgo(getRandomIntInclusive(0, 29));
+
+    await addDoneActivity({
+      userId,
+      activityName    : name,
+      durationMinutes,
+      distanceKm,
+      series,
+      repetitions,
+      performedAt,
+      calories_burned : caloriesBurned
+    });
+  }
+  console.log('✅ 10 entradas de actividad agregadas');
 
   // Entradas de agua: 30 días, 1.5-2.5 L diarias
   for (let d = 0; d < 30; d++) {
     const consumedAt = daysAgo(d);
-    const liters = +(Math.random() * (2.5 - 1.5) + 1.5).toFixed(2);
+    const liters = +(Math.random() * (2.5 - 1.5) + 1).toFixed(2);
     await addConsumedWater({ userId, liters, consumedAt });
   }
   console.log('✅ 30 entradas de agua agregadas para Raúl');
