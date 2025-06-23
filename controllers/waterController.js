@@ -70,10 +70,10 @@ async function addConsumedWater (req,res){
   
     try {
       const result = await pool.query(
-        `INSERT INTO water_entries (user_id, liters)
-         VALUES ($1, $2)
+        `INSERT INTO water_entries (user_id, liters, consumed_at)
+         VALUES ($1, $2, $3)
          RETURNING *`,
-        [userId, liters]
+        [userId, liters, new Date()]
       );
   
       res.status(201).json({ message: 'Registro de agua guardado', entry: toCamelCase(result.rows[0]) });
