@@ -91,7 +91,7 @@ async function seedJavier() {
         console.warn(`Tipo desconocido: ${type}`);
     }
     const performedAt = daysAgo(getRandomIntInclusive(0, 29));
-    await addDoneActivity({ userId, activityName: name, durationMinutes, distanceKm, series, repetitions, performedAt, calories_burned: caloriesBurned });
+    await addDoneActivity({ userId, activityName: name, durationMinutes, distanceKm, series, repetitions, performedAt, caloriesBurned });
   }
   console.log('✅ 15 entradas de actividad agregadas');
 

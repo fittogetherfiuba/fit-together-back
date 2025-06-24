@@ -110,7 +110,7 @@ async function seedRaul() {
       series,
       repetitions,
       performedAt,
-      calories_burned : caloriesBurned
+      caloriesBurned
     });
   }
   console.log('✅ 10 entradas de actividad agregadas');

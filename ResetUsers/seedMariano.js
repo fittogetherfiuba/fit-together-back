@@ -101,7 +101,6 @@ async function seedRaul() {
         console.warn(`Tipo desconocido: ${type}`);
     }
     const performedAt = daysAgo(getRandomIntInclusive(0, 29));
-
     await addDoneActivity({
       userId,
       activityName    : name,
@@ -110,7 +109,7 @@ async function seedRaul() {
       series,
       repetitions,
       performedAt,
-      calories_burned : caloriesBurned
+      caloriesBurned
     });
   }
   console.log('✅ 40 entradas de actividad agregadas');

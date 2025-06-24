@@ -77,7 +77,6 @@ async function addDoneActivity({ userId, activityName, durationMinutes, distance
     throw new Error('La actividad no existe');
   }
   const activityId = actRes.rows[0].id;
-
   const result = await pool.query(
     `INSERT INTO user_activity_entries
        (user_id, activity_id, duration_minutes, distance_km, series, repetitions, performed_at, calories_burned)

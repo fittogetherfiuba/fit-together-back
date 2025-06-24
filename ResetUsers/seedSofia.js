@@ -112,7 +112,7 @@ async function seedSofia() {
       series,
       repetitions,
       performedAt,
-      calories_burned : caloriesBurned
+      caloriesBurned
     });
   }
   console.log('✅ 15 entradas de actividad agregadas');
