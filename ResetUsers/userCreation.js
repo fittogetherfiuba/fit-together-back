@@ -224,12 +224,13 @@ async function createPost({ userId, communityId, title, body, topic, photos }) {
   const post = toCamelCase(postRows[0]);
 
   if (Array.isArray(photos) && photos.length > 0) {
-    await Promise.all(
-      photos.map(url => pool.query(
+    
+      const insertPromises = photos.map(url => pool.query(
         'INSERT INTO communities_posts_photos (post_id, url) VALUES ($1, $2)',
         [post.id, url]
-      ))
-    );
+        )
+      );
+      await Promise.all(insertPromises);
   }
 
   return post;
