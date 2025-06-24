@@ -256,15 +256,15 @@ async function getCaloriesConsumedThisWeek(req,res) {
     return res.status(400).json({ error: 'Falta userId en la query' });
   }
 
-  const now = new Date();
-  // 0 = domingo … 1 = lunes … 6 = sábado
-  const todayDay = now.getDay(); 
-  // Cuántos días restar para llegar al lunes
-  const daysSinceMonday = (todayDay + 6) % 7;
-  const lastMonday = new Date(now);
-  lastMonday.setDate(now.getDate() - daysSinceMonday);
-  lastMonday.setHours(0, 0, 0, 0);  // corte a medianoche
-  const mondayStr = lastMonday.toISOString().slice(0, 10);
+    const now       = new Date();
+    const startDate = new Date(now);
+
+    // Retrocedemos 6 días (para tener una ventana de 7 días incluyendo hoy)
+    startDate.setDate(now.getDate() - 6);
+    // Normalizamos la hora a la medianoche
+    startDate.setHours(0, 0, 0, 0);
+
+    const startISO = startDate.toISOString();
 
   try {
     const { rows } = await pool.query(
@@ -272,9 +272,9 @@ async function getCaloriesConsumedThisWeek(req,res) {
          FROM user_food_entries
         WHERE user_id = $1
           AND consumed_at >= $2::date`,
-      [userId, mondayStr]
+      [userId, startISO]
     );
-    return res.json({since: mondayStr, until: now.toISOString(), totalCalories: Number(rows[0].total_calories)});
+    return res.json({since: startISO, until: now.toISOString(), totalCalories: Number(rows[0].total_calories)});
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Error al calcular calorías desde el último lunes' });
@@ -352,14 +352,15 @@ async function getUsersConsumedFoodsThisWeek(req, res) {
   if (!userId) {
     return res.status(400).json({ error: 'Falta userId en la query' });
   }
+  const now       = new Date();
+  const startDate = new Date(now);
 
-  const now = new Date();
-  const todayDay   = now.getDay();
-  const daysMonday = (todayDay + 6) % 7;
-  const lastMonday = new Date(now);
-  lastMonday.setDate(now.getDate() - daysMonday);
-  lastMonday.setHours(0, 0, 0, 0);
-  const mondayStr = lastMonday.toISOString().slice(0, 10);
+  // Retrocedemos 6 días (para tener una ventana de 7 días incluyendo hoy)
+  startDate.setDate(now.getDate() - 6);
+  // Normalizamos la hora a la medianoche
+  startDate.setHours(0, 0, 0, 0);
+
+  const startISO = startDate.toISOString();
 
   try {
     const result = await pool.query(
@@ -375,7 +376,7 @@ async function getUsersConsumedFoodsThisWeek(req, res) {
        INNER JOIN foods f ON e.food_id = f.id
        WHERE e.user_id = $1
          AND e.consumed_at >= $2::date`,
-      [userId, mondayStr]
+      [userId, startISO]
     );
 
     const entries = result.rows;

@@ -62,7 +62,7 @@ async function getWaterConsumedThisWeek (req,res) {
 
 // Cargar agua consumida
 async function addConsumedWater (req,res){
-    const { userId, liters } = req.body;
+    const { userId, liters, consumedAt } = req.body;
   
     if (!userId || typeof liters !== 'number' || liters <= 0) {
       return res.status(400).json({ error: 'Datos inválidos: se requiere userId y liters > 0' });
@@ -70,10 +70,10 @@ async function addConsumedWater (req,res){
   
     try {
       const result = await pool.query(
-        `INSERT INTO water_entries (user_id, liters)
-         VALUES ($1, $2)
+        `INSERT INTO water_entries (user_id, liters, consumed_at)
+         VALUES ($1, $2, $3)
          RETURNING *`,
-        [userId, liters]
+        [userId, liters, consumedAt || new Date()]
       );
   
       res.status(201).json({ message: 'Registro de agua guardado', entry: toCamelCase(result.rows[0]) });
